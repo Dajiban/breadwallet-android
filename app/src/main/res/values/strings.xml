@@ -486,6 +486,10 @@
   <string name="Settings.enjoying">Are you enjoying DigiByte?</string>
   <!-- Import wallet label -->
   <string name="Settings.importTitle">Import Wallet</string>
+  <!-- Import wallet left message -->
+  <string name="Settings.importLeftMessage">Wallet to be Imported</string>
+  <!-- Import wallet right message -->
+  <string name="Settings.importRightMessage">Your DigiByte Wallet</string>
   <!-- Manage settings section header -->
   <string name="Settings.manage">Manage</string>
   <!-- Notifications label -->
