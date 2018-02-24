@@ -62,6 +62,8 @@ add_library( # Specifies the name of the library.
              src/main/jni/digibytewallet-core/BRTransaction.h
              src/main/jni/digibytewallet-core/BRWallet.c
              src/main/jni/digibytewallet-core/BRWallet.h
+             src/main/jni/digibytewallet-core/hashmap.c
+             src/main/jni/digibytewallet-core/hashmap.h
              src/main/jni/digibytewallet-core/crypto/sha256.h
              src/main/jni/digibytewallet-core/crypto/groestl.c
              src/main/jni/digibytewallet-core/crypto/groestl.h
