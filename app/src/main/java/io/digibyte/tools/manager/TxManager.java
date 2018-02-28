@@ -61,11 +61,6 @@ public class TxManager {
 
     private static final String TAG = TxManager.class.getName();
     private static TxManager instance;
-    private RecyclerView txList;
-    public TransactionListAdapter adapter;
-    public PromptManager.PromptItem currentPrompt;
-    public PromptManager.PromptInfo promptInfo;
-    public TransactionListAdapter.SyncingHolder syncingHolder;
 
     public static TxManager getInstance() {
         if (instance == null) instance = new TxManager();
@@ -73,46 +68,6 @@ public class TxManager {
     }
 
     public void init(final BreadActivity app) {
-        txList = app.findViewById(R.id.tx_list);
-        txList.setLayoutManager(new CustomLinearLayoutManager(app));
-        txList.addOnItemTouchListener(new RecyclerItemClickListener(app,
-                txList, new RecyclerItemClickListener.OnItemClickListener() {
-            @Override
-            public void onItemClick(View view, int position, float x, float y) {
-                if (currentPrompt == null || position > 0)
-                    BRAnimator.showTransactionPager(app, adapter.getItems(), currentPrompt == null ? position : position - 1);
-                else {
-                    //clicked on the  x (close)
-                    if (x > view.getWidth() - 100 && y < 100) {
-                        view.animate().setDuration(150).translationX(BreadActivity.screenParametersPoint.x).setListener(new AnimatorListenerAdapter() {
-                            @Override
-                            public void onAnimationEnd(Animator animation) {
-                                super.onAnimationEnd(animation);
-                                hidePrompt(app, null);
-                            }
-                        });
-
-                    } else { //clicked on the prompt
-                        BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(currentPrompt) + ".trigger");
-                        if (currentPrompt != PromptManager.PromptItem.SYNCING) {
-                            PromptManager.PromptInfo info = PromptManager.getInstance().promptInfo(app, currentPrompt);
-                            if (info != null)
-                                info.listener.onClick(view);
-                            currentPrompt = null;
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onLongItemClick(View view, int position) {
-
-            }
-        }));
-        if (adapter == null)
-            adapter = new TransactionListAdapter(app, null);
-        txList.setAdapter(adapter);
-        adapter.notifyDataSetChanged();
         setupSwipe(app);
     }
 
@@ -128,10 +83,12 @@ public class TxManager {
                 BRExecutor.getInstance().forMainThreadTasks().execute(new Runnable() {
                     @Override
                     public void run() {
-                        if (progress > 0 && progress < 1) {
-                            currentPrompt = PromptManager.PromptItem.SYNCING;
+                        if (progress > 0 && progress < 1)
+                        {
                             updateCard(app);
-                        } else {
+                        }
+                        else
+                        {
                             showNextPrompt(app);
                         }
                     }
@@ -145,17 +102,11 @@ public class TxManager {
         crashIfNotMain();
         if (item == null) throw new RuntimeException("can't be null");
         BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(item) + ".displayed");
-        if (currentPrompt != PromptManager.PromptItem.SYNCING) {
-            currentPrompt = item;
-        }
         updateCard(app);
     }
 
     public void hidePrompt(final Activity app, final PromptManager.PromptItem item) {
         crashIfNotMain();
-        currentPrompt = null;
-        if (txList.getAdapter() != null)
-            txList.getAdapter().notifyItemRemoved(0);
         if (item == PromptManager.PromptItem.SYNCING) {
             showNextPrompt(app);
             updateCard(app);
@@ -172,8 +123,6 @@ public class TxManager {
         PromptManager.PromptItem toShow = PromptManager.getInstance().nextPrompt(app);
         if (toShow != null) {
 //            Log.d(TAG, "showNextPrompt: " + toShow);
-            currentPrompt = toShow;
-            promptInfo = PromptManager.getInstance().promptInfo(app, currentPrompt);
             updateCard(app);
         } else {
             Log.i(TAG, "showNextPrompt: nothing to show");
@@ -188,18 +137,13 @@ public class TxManager {
 
         long took = (System.currentTimeMillis() - start);
         if (took > 500)
-            Log.e(TAG, "updateTxList: took: " + took);
-        if (adapter != null ) {
-            ((Activity) app).runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    adapter.setItems(items);
-                    txList.setAdapter(adapter);
-                    adapter.notifyDataSetChanged();
-                }
-            });
-        }
-
+        Log.e(TAG, "updateTxList: took: " + took);
+        ((Activity) app).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // TODO: fire event to update transactions
+            }
+        });
     }
 
     public void updateCard(final Context app) {
@@ -233,7 +177,8 @@ public class TxManager {
             }
         };
         ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        itemTouchHelper.attachToRecyclerView(txList);
+        // TODO: FIx this
+        //itemTouchHelper.attachToRecyclerView(txList);
     }
 
 

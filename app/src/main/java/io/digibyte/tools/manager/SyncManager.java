@@ -1,18 +1,20 @@
 package io.digibyte.tools.manager;
 
-import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
+import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
+
+import io.digibyte.DigiByte;
 import io.digibyte.presenter.activities.BreadActivity;
 import io.digibyte.tools.listeners.SyncReceiver;
-import io.digibyte.tools.util.Utils;
 import io.digibyte.wallet.BRPeerManager;
-
-import java.util.concurrent.TimeUnit;
 
 /**
  * BreadWallet
@@ -38,24 +40,47 @@ import java.util.concurrent.TimeUnit;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-public class SyncManager {
+public class SyncManager
+{
+    public interface onStatusListener
+    {
+        void onSyncManagerStart();
+        void onSyncManagerUpdate();
+        void onSyncManagerFinished();
+    }
 
     private static final String TAG = SyncManager.class.getName();
     private static SyncManager instance;
     private static final long SYNC_PERIOD = TimeUnit.HOURS.toMillis(24);
     private static SyncProgressTask syncTask;
-    public boolean running;
-//    private final Object lock = new Object();
 
-    public static SyncManager getInstance() {
-        if (instance == null) instance = new SyncManager();
+    private double theProgress;
+    private boolean theRunningFlag;
+    private long theLastBlockTimestamp;
+
+    public double getProgress() { return theProgress; }
+    public boolean isRunning() { return theRunningFlag; }
+    public long getLastBlockTimestamp() { return theLastBlockTimestamp; }
+
+    private ArrayList<onStatusListener> theListeners = new ArrayList<>();
+    public void addListener(onStatusListener aListener) { theListeners.add(aListener); }
+    public void removeListener(onStatusListener aListener) { theListeners.remove(aListener); }
+
+    public static SyncManager getInstance()
+    {
+        if (instance == null)
+        {
+            instance = new SyncManager();
+        }
         return instance;
     }
 
-    private SyncManager() {
+    private SyncManager()
+    {
     }
 
-    private void createAlarm(Context app, long time) {
+    private void createAlarm(Context app, long time)
+    {
         AlarmManager alarmManager = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(app, SyncReceiver.class);
         intent.setAction(SyncReceiver.SYNC_RECEIVER);//my custom string action name
@@ -63,16 +88,21 @@ public class SyncManager {
         alarmManager.setWindow(AlarmManager.RTC_WAKEUP, time, time + TimeUnit.MINUTES.toMillis(1), pendingIntent);//first start will start asap
     }
 
-    public synchronized void updateAlarms(Context app) {
+    public synchronized void updateAlarms(Context app)
+    {
         createAlarm(app, System.currentTimeMillis() + SYNC_PERIOD);
     }
 
-    public synchronized void startSyncingProgressThread() {
+    public synchronized void startSyncingProgressThread()
+    {
         Log.d(TAG, "startSyncingProgressThread:" + Thread.currentThread().getName());
 
-        try {
-            if (syncTask != null) {
-                if (running) {
+        try
+        {
+            if (syncTask != null)
+            {
+                if (theRunningFlag)
+                {
                     Log.e(TAG, "startSyncingProgressThread: syncTask.running == true, returning");
                     return;
                 }
@@ -82,116 +112,116 @@ public class SyncManager {
             syncTask = new SyncProgressTask();
             syncTask.start();
 
-        } catch (IllegalThreadStateException ex) {
+        }
+        catch (IllegalThreadStateException ex)
+        {
             ex.printStackTrace();
         }
 
     }
 
-    public synchronized void stopSyncingProgressThread() {
+    public synchronized void stopSyncingProgressThread()
+    {
         Log.d(TAG, "stopSyncingProgressThread");
         final BreadActivity ctx = BreadActivity.getApp();
-        if (ctx == null) {
+        if (ctx == null)
+        {
             Log.e(TAG, "stopSyncingProgressThread: ctx is null");
             return;
         }
-        try {
-            if (syncTask != null) {
+        try
+        {
+            if (syncTask != null)
+            {
                 syncTask.interrupt();
                 syncTask = null;
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex)
+        {
             ex.printStackTrace();
         }
     }
 
-    private class SyncProgressTask extends Thread {
-        public double progressStatus = 0;
-        private BreadActivity app;
-
-        public SyncProgressTask() {
-            progressStatus = 0;
-        }
-
+    private class SyncProgressTask extends Thread
+    {
         @Override
-        public void run() {
-            if (running) return;
-            try {
-                app = BreadActivity.getApp();
-                progressStatus = 0;
-                running = true;
-                Log.d(TAG, "run: starting: " + progressStatus);
+        public void run()
+        {
+            if (theRunningFlag)
+            {
+                return;
+            }
 
-                if (app != null) {
-                    final long lastBlockTimeStamp = BRPeerManager.getInstance().getLastBlockTimestamp() * 1000;
-                    app.runOnUiThread(new Runnable() {
+            try
+            {
+                theProgress = 0;
+                theRunningFlag = true;
+
+                new Handler(Looper.getMainLooper()).post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        for (onStatusListener listener : theListeners)
+                        {
+                            listener.onSyncManagerStart();
+                        }
+                    }
+                });
+
+                while (theRunningFlag)
+                {
+                    int startHeight = BRSharedPrefs.getStartHeight(DigiByte.getBreadContext());
+                    theProgress = BRPeerManager.syncProgress(startHeight);
+                    theLastBlockTimestamp = BRPeerManager.getInstance().getLastBlockTimestamp();
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable()
+                    {
                         @Override
-                        public void run() {
-                            if (TxManager.getInstance().syncingHolder != null)
-                                TxManager.getInstance().syncingHolder.progress.setProgress((int) (progressStatus * 100));
-                            if (TxManager.getInstance().syncingHolder != null)
-                                TxManager.getInstance().syncingHolder.date.setText(Utils.formatTimeStamp(lastBlockTimeStamp, "MMM. dd, yyyy  ha"));
+                        public void run()
+                        {
+                            for (onStatusListener listener : theListeners)
+                            {
+                                listener.onSyncManagerUpdate();
+                            }
                         }
                     });
+
+                    if (theProgress == 1)
+                    {
+                        theRunningFlag = false;
+                    }
                 }
 
-                while (running) {
-                    if (app != null) {
-                        int startHeight = BRSharedPrefs.getStartHeight(app);
-                        progressStatus = BRPeerManager.syncProgress(startHeight);
-//                    Log.e(TAG, "run: progressStatus: " + progressStatus);
-                        if (progressStatus == 1) {
-                            running = false;
-                            continue;
-                        }
-                        final long lastBlockTimeStamp = BRPeerManager.getInstance().getLastBlockTimestamp() * 1000;
-//                        Log.e(TAG, "run: changing the progress to: " + progressStatus + ": " + Thread.currentThread().getName());
-                        app.runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                if (TxManager.getInstance().currentPrompt != PromptManager.PromptItem.SYNCING) {
-                                    Log.e(TAG, "run: currentPrompt != SYNCING, showPrompt(SYNCING) ....");
-                                    TxManager.getInstance().showPrompt(app, PromptManager.PromptItem.SYNCING);
-                                }
-
-                                if (TxManager.getInstance().syncingHolder != null)
-                                    TxManager.getInstance().syncingHolder.progress.setProgress((int) (progressStatus * 100));
-                                if (TxManager.getInstance().syncingHolder != null)
-                                    TxManager.getInstance().syncingHolder.date.setText(Utils.formatTimeStamp(lastBlockTimeStamp, "MMM. dd, yyyy  ha"));
-                            }
-                        });
-
-                    } else {
-//                        Log.e(TAG, "run: app is null");
-                        app = BreadActivity.getApp();
-                    }
-
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        Log.e(TAG, "run: Thread.sleep was Interrupted:" + Thread.currentThread().getName(), e);
-                    }
-
+                try
+                {
+                    Thread.sleep(500);
+                }
+                catch (InterruptedException e)
+                {
+                    Log.e(TAG, "run: Thread.sleep was Interrupted:" + Thread.currentThread().getName(), e);
                 }
 
                 Log.d(TAG, "run: SyncProgress task finished:" + Thread.currentThread().getName());
-            } finally {
-//                if (progressStatus != 1) {
-//                    throw new RuntimeException("didn't finish");
-//                }
-                running = false;
-                progressStatus = 0;
-                if (app != null)
-                    app.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            TxManager.getInstance().hidePrompt(app, PromptManager.PromptItem.SYNCING);
-                        }
-                    });
             }
+            finally
+            {
+                theProgress = 0;
+                theRunningFlag = false;
 
+                new Handler(Looper.getMainLooper()).post(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        for (onStatusListener listener : theListeners)
+                        {
+                            listener.onSyncManagerFinished();
+                        }
+                    }
+                });
+            }
         }
     }
-
 }

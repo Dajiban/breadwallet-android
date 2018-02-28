@@ -116,8 +116,8 @@ public class BRSearchBar extends android.support.v7.widget.Toolbar {
         receivedFilter.setType(switches[1] ? 3 : 2);
         pendingFilter.setType(switches[2] ? 3 : 2);
         completedFilter.setType(switches[3] ? 3 : 2);
-        if (TxManager.getInstance().adapter != null)
-            TxManager.getInstance().adapter.filterBy(searchEdit.getText().toString(), filterSwitches);
+
+        // TODO: Implement this -> TxManager.getInstance().adapter.filterBy(searchEdit.getText().toString(), filterSwitches);
     }
 
     private void setListeners() {
@@ -151,8 +151,7 @@ public class BRSearchBar extends android.support.v7.widget.Toolbar {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (TxManager.getInstance().adapter != null)
-                    TxManager.getInstance().adapter.filterBy(s.toString(), filterSwitches);
+                // TODO: Implement this -> TxManager.getInstance().adapter.filterBy(s.toString(), filterSwitches);
             }
 
             @Override
@@ -229,16 +228,14 @@ public class BRSearchBar extends android.support.v7.widget.Toolbar {
                     keyboard.showSoftInput(searchEdit, 0);
                 }
             }, 400);
-            if (TxManager.getInstance().adapter != null)
-                TxManager.getInstance().adapter.updateData();
+            // TODO: Implement this ->  TxManager.getInstance().adapter.updateData();
 
         } else {
             keyboard.hideSoftInputFromWindow(searchEdit.getWindowToken(), 0);
             clearSwitches();
             updateFilterButtonsUI(filterSwitches);
-            if (TxManager.getInstance().adapter != null) {
-                TxManager.getInstance().adapter.resetFilter();
-            }
+
+            // TODO: Implement this -> TxManager.getInstance().adapter.resetFilter();
         }
     }
 

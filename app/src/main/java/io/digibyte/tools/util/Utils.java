@@ -9,6 +9,8 @@ import android.content.pm.PackageManager;
 import android.hardware.fingerprint.FingerprintManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
@@ -18,6 +20,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
 import io.digibyte.presenter.activities.intro.IntroActivity;
+import io.digibyte.tools.manager.SyncManager;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;

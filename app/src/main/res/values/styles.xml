@@ -1,13 +1,12 @@
 <resources>
     <!-- Base application theme. -->
     <style name="AppTheme" parent="Theme.AppCompat.Light">
-        <!-- Customize your theme here. -->
-        <item name="android:windowLightStatusBar">true</item>
         <item name="android:title">false</item>
         <item name="windowNoTitle">true</item>
         <item name="windowActionBar">true</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowBackground">@color/white</item>
-        <item name="android:statusBarColor">@android:color/darker_gray</item>
+        <item name="android:statusBarColor">@color/logo_gradient_start</item>
         <item name="android:actionBarStyle">@style/BreadActionBar</item>
         <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
         <item name="android:buttonStyle">@style/RobotoButtonStyle</item>
