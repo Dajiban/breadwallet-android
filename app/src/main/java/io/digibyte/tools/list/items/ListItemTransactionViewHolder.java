@@ -3,6 +3,7 @@ package io.digibyte.tools.list.items;
 import android.content.Context;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageView;
@@ -61,9 +62,6 @@ public class ListItemTransactionViewHolder extends ListItemViewHolder
         ListItemTransactionData data = (ListItemTransactionData) aListItemData;
         TxItem item = data.transactionItem;
 
-        // TODO: Check if this returns the right value
-        int position = this.getAdapterPosition();
-
         item.metaData = KVStoreManager.getInstance().getTxMetaData(context, item.getTxHash());
         String commentString = (item.metaData == null || item.metaData.comment == null) ? "" : item.metaData.comment;
 
@@ -96,7 +94,8 @@ public class ListItemTransactionViewHolder extends ListItemViewHolder
         boolean received = item.getSent() == 0;
 
         this.account.setText(item.getTo()[0]);
-        this.itemView.setBackgroundResource(this.getResourceByPos(position));
+
+        this.itemView.setBackgroundResource(this.getResourceByPos(data.transactionIndex, data.transactionsCount));
         this.arrowIcon.setImageResource(received ? R.drawable.arrow_down_bold_circle : R.drawable.arrow_up_bold_circle);
         this.sentReceived.setText(received ? context.getString(R.string.TransactionDetails_received, "") : context.getString(R.string.TransactionDetails_sent, ""));
         this.toFrom.setText(received ? String.format(context.getString(R.string.TransactionDetails_from), "") : String.format(context.getString(R.string.TransactionDetails_to), ""));
@@ -214,11 +213,9 @@ public class ListItemTransactionViewHolder extends ListItemViewHolder
         this.timestamp.setText(timeSpan);
     }
 
-    private int getResourceByPos(int aPosition)
+    private int getResourceByPos(int aPosition, int aTotal)
     {
-        /*
-        // TODO: FIX THIS
-        if (itemFeed != null && itemFeed.size() == 1)
+        if (aTotal == 1)
         {
             return R.drawable.tx_rounded;
         }
@@ -226,15 +223,10 @@ public class ListItemTransactionViewHolder extends ListItemViewHolder
         {
             return R.drawable.tx_rounded_up;
         }
-        else if (itemFeed != null && aPosition == itemFeed.size() - 1)
+        else if (aPosition == aTotal - 1)
         {
             return R.drawable.tx_rounded_down;
         }
-        else
-        {
-            return R.drawable.tx_not_rounded;
-        }
-        */
 
         return R.drawable.tx_not_rounded;
     }

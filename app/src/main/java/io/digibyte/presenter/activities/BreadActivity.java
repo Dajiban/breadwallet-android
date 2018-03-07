@@ -290,6 +290,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         }
         else
         {
+
             // TODO: Show propmt
         }
     }
@@ -336,6 +337,8 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         }
     };
 
+
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////// Manager Listeners ////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -370,9 +373,11 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     public void onTxManagerUpdate(TxItem[] aTransactionList)
     {
         ArrayList<ListItemData> transactionList = new ArrayList<>();
-        for(TxItem transaction : aTransactionList)
+
+        int transactionsCount = aTransactionList.length;
+        for(int index = 0; index < transactionsCount; index++)
         {
-            transactionList.add(new ListItemTransactionData(transaction, onTransactionListItemClick));
+            transactionList.add(new ListItemTransactionData(index, transactionsCount, aTransactionList[index], onTransactionListItemClick));
         }
         theTransactionListAdapter.addItemsInSection(LIST_SECTION_TRANSACTIONS, transactionList);
     }
