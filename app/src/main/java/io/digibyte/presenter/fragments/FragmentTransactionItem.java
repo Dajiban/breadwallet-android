@@ -296,7 +296,7 @@ public class FragmentTransactionItem extends Fragment {
                 public void run() {
                     KVStoreManager.getInstance().putTxMetaData(app, md, item.getTxHash());
 //                    item.metaData = KVStoreManager.getInstance().getTxMetaData(app, item.getTxHash());
-                    TxManager.getInstance().updateTxList(app);
+                    TxManager.getInstance().updateTxList();
                 }
             });
 

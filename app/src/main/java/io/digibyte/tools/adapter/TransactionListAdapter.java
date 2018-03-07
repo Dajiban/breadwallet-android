@@ -4,6 +4,7 @@ import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -66,41 +67,64 @@ public class TransactionListAdapter extends RecyclerView.Adapter<ListItemViewHol
 {
     public static final String TAG = TransactionListAdapter.class.getName();
 
-    private ArrayList<ListItemData> theItemDataList;
+    private SparseArray<ArrayList<ListItemData>> theItemDataList;
 
     public TransactionListAdapter()
     {
-        theItemDataList = new ArrayList<>();
+        theItemDataList = new SparseArray<>();
     }
 
-    public void addItems(ArrayList<ListItemData> anItemDataList)
+    public void addSection(int aSectionId)
     {
-        theItemDataList = anItemDataList;
+        theItemDataList.put(aSectionId, new ArrayList<ListItemData>());
+    }
+
+    public void removeSection(int aSectionId)
+    {
+        theItemDataList.remove(aSectionId);
         this.notifyDataSetChanged();
     }
 
-    public void insertItem(int anIndex, ListItemData aListItem)
+    public ArrayList<ListItemData> getItemsInSection(int aSectionId)
     {
-        theItemDataList.add(anIndex, aListItem);
-        this.notifyItemInserted(anIndex);
+        return theItemDataList.get(aSectionId, new ArrayList<ListItemData>());
     }
 
-    public void updateItem(ListItemData aListItem)
+    public void updateSection(int aSectionId)
     {
-        int position = theItemDataList.indexOf(aListItem);
-        if(position >= 0)
+        this.notifyDataSetChanged();
+    }
+
+    public void addItemsInSection(int aSectionId, ArrayList<ListItemData> anItemDataList)
+    {
+        theItemDataList.put(aSectionId, anItemDataList);
+        this.notifyDataSetChanged();
+    }
+
+    public void addItemInSection(int aSectionId, ListItemData aListItem)
+    {
+        ArrayList<ListItemData> listItems = theItemDataList.get(aSectionId);
+        if(null == listItems)
         {
-            this.notifyItemChanged(position, false);
+            listItems = new ArrayList<>();
+            theItemDataList.put(aSectionId, listItems);
         }
+        listItems.add(aListItem);
+        this.notifyDataSetChanged(); // TODO: Notify correct position
     }
 
-    public void removeItem(ListItemData aListItem)
+    public void removeItemsInSection(int aSectionId)
     {
-        int position = theItemDataList.indexOf(aListItem);
-        if(position >= 0)
+        theItemDataList.put(aSectionId, new ArrayList<ListItemData>());
+        this.notifyDataSetChanged();
+    }
+
+    public void removeItemInSection(int aSectionId, ListItemData aListItem)
+    {
+        if(null != theItemDataList.get(aSectionId))
         {
-            theItemDataList.remove(position);
-            this.notifyItemRemoved(position);
+            theItemDataList.get(aSectionId).remove(aListItem);
+            this.notifyDataSetChanged(); // TODO: Notify correct position
         }
     }
 
@@ -128,19 +152,40 @@ public class TransactionListAdapter extends RecyclerView.Adapter<ListItemViewHol
     @Override
     public void onBindViewHolder(ListItemViewHolder holder, int aPosition)
     {
-        holder.process(theItemDataList.get(aPosition));
+        holder.process(this.getListItemDataForPosition(aPosition));
     }
 
     @Override
     public int getItemViewType(int aPosition)
     {
-        return theItemDataList.get(aPosition).resourceId;
+        return this.getListItemDataForPosition(aPosition).resourceId;
     }
 
     @Override
     public int getItemCount()
     {
-        return theItemDataList.size();
+        int itemCount = 0;
+        for(int sectionIndex = 0; sectionIndex < theItemDataList.size(); sectionIndex++)
+        {
+            itemCount += theItemDataList.valueAt(sectionIndex).size();
+        }
+        return itemCount;
+    }
+
+    private ListItemData getListItemDataForPosition(int aPosition)
+    {
+        int currentPosition = -1;
+        for(int sectionIndex = 0; sectionIndex < theItemDataList.size(); sectionIndex++)
+        {
+            for(int index = 0; index < theItemDataList.get(sectionIndex).size(); index++)
+            {
+                if(aPosition == ++currentPosition)
+                {
+                    return theItemDataList.get(sectionIndex).get(index);
+                }
+            }
+        }
+        return null;
     }
 
 

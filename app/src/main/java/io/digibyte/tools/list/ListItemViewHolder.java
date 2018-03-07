@@ -3,7 +3,7 @@ package io.digibyte.tools.list;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener
 {
     protected ListItemData theItemData;
 
@@ -12,6 +12,7 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
         super(itemView);
 
         this.itemView.setOnClickListener(this);
+        this.itemView.setOnLongClickListener(this);
     }
 
     public void process(ListItemData aListItemData)
@@ -26,5 +27,16 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
         {
             theItemData.onClick();
         }
+    }
+
+    @Override
+    public boolean onLongClick(View v)
+    {
+        if(null != theItemData)
+        {
+            return theItemData.onLongClick();
+        }
+
+        return false;
     }
 }

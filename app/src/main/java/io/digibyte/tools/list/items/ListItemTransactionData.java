@@ -8,9 +8,9 @@ public class ListItemTransactionData extends ListItemData
 {
     public final TxItem transactionItem;
 
-    public ListItemTransactionData(TxItem aTransactionItem)
+    public ListItemTransactionData(TxItem aTransactionItem, OnListItemClickListener aListener)
     {
-        super(R.layout.list_item_transaction, ListItemTransactionViewHolder.class);
+        super(R.layout.list_item_transaction, ListItemTransactionViewHolder.class, aListener);
 
         this.transactionItem = aTransactionItem;
     }

@@ -76,8 +76,8 @@ public class BRAnimator {
     private static FragmentSignal fragmentSignal;
     private static boolean clickAllowed = true;
     public static int SLIDE_ANIMATION_DURATION = 300;
-    public static float t1Size;
-    public static float t2Size;
+    public static float t1Size = 30;
+    public static float t2Size = 16;
     public static boolean supportIsShowing;
 
     public static void showBreadSignal(Activity activity, String title, String iconDescription, int drawableId, BROnSignalCompletion completion) {
@@ -94,14 +94,6 @@ public class BRAnimator {
         transaction.addToBackStack(null);
         if (!activity.isDestroyed())
             transaction.commit();
-    }
-
-    public static void init(Activity app) {
-        if (app == null) return;
-//        t1Size = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 30, app.getResources().getDisplayMetrics());
-//        t2Size = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_SP, 16, app.getResources().getDisplayMetrics());
-        t1Size = 30;
-        t2Size = 16;
     }
 
     public static void showFragmentByTag(Activity app, String tag) {

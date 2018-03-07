@@ -102,10 +102,11 @@ public class BRSearchBar extends android.support.v7.widget.Toolbar {
             }
         }, 200); //use 300 to make it run when coming back from lock screen
 
-        BRExecutor.getInstance().forBackgroundTasks().execute(new Runnable() {
+        BRExecutor.getInstance().forBackgroundTasks().execute(new Runnable()
+        {
             @Override
             public void run() {
-                TxManager.getInstance().updateTxList(breadActivity);
+                TxManager.getInstance().updateTxList();
             }
         });
 

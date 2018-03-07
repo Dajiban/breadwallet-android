@@ -75,17 +75,16 @@ public class SyncManager
         return instance;
     }
 
-    private SyncManager()
-    {
-    }
-
     private void createAlarm(Context app, long time)
     {
         AlarmManager alarmManager = (AlarmManager) app.getSystemService(Context.ALARM_SERVICE);
-        Intent intent = new Intent(app, SyncReceiver.class);
-        intent.setAction(SyncReceiver.SYNC_RECEIVER);//my custom string action name
-        PendingIntent pendingIntent = PendingIntent.getService(app, 1001, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        alarmManager.setWindow(AlarmManager.RTC_WAKEUP, time, time + TimeUnit.MINUTES.toMillis(1), pendingIntent);//first start will start asap
+        if(null != alarmManager)
+        {
+            Intent intent = new Intent(app, SyncReceiver.class);
+            intent.setAction(SyncReceiver.SYNC_RECEIVER);//my custom string action name
+            PendingIntent pendingIntent = PendingIntent.getService(app, 1001, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            alarmManager.setWindow(AlarmManager.RTC_WAKEUP, time, time + TimeUnit.MINUTES.toMillis(1), pendingIntent);//first start will start asap
+        }
     }
 
     public synchronized void updateAlarms(Context app)
