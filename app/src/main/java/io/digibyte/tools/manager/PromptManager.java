@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.view.View;
 
+import io.digibyte.DigiByte;
 import io.digibyte.R;
 import io.digibyte.presenter.activities.UpdatePinActivity;
 import io.digibyte.presenter.activities.intro.WriteDownActivity;
@@ -59,117 +60,45 @@ public class PromptManager
 
     private PromptManager() {}
 
-    public class PromptInfo
+    public PromptItem nextPrompt()
     {
-        public String title;
-        public String description;
-        public View.OnClickListener listener;
-
-        public PromptInfo(String title, String description, View.OnClickListener listener)
-        {
-            this.title = title;
-            this.description = description;
-            this.listener = listener;
-        }
-    }
-
-    public boolean shouldPrompt(Context app, PromptItem item)
-    {
-        assert (app != null);
-        switch (item)
-        {
-            case FINGER_PRINT:
-                return !BRSharedPrefs.getUseFingerprint(app) && Utils.isFingerprintAvailable(app);
-            case PAPER_KEY:
-                return !BRSharedPrefs.getPhraseWroteDown(app);
-            case UPGRADE_PIN:
-                return BRKeyStore.getPinCode(app).length() != 6;
-            case RECOMMEND_RESCAN:
-                return BRSharedPrefs.getScanRecommended(app);
-
-        }
-        return false;
-    }
-
-    public PromptItem nextPrompt(Context app)
-    {
-        if (shouldPrompt(app, RECOMMEND_RESCAN))
+        if (shouldPrompt(RECOMMEND_RESCAN))
         {
             return RECOMMEND_RESCAN;
         }
-        if (shouldPrompt(app, UPGRADE_PIN))
+
+        if (shouldPrompt(UPGRADE_PIN))
         {
             return UPGRADE_PIN;
         }
-        if (shouldPrompt(app, PAPER_KEY))
+
+        if (shouldPrompt(PAPER_KEY))
         {
             return PAPER_KEY;
         }
-        if (shouldPrompt(app, FINGER_PRINT))
+
+        if (shouldPrompt(FINGER_PRINT))
         {
             return FINGER_PRINT;
         }
         return null;
     }
 
-    public PromptInfo promptInfo(final Activity app, PromptItem item)
+    private boolean shouldPrompt(PromptItem item)
     {
+        final Context context = DigiByte.context;
         switch (item)
         {
             case FINGER_PRINT:
-                return new PromptInfo(app.getString(R.string.Prompts_TouchId_title_android), app.getString(R.string.Prompts_TouchId_body_android), new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Intent intent = new Intent(app, FingerprintActivity.class);
-                        app.startActivity(intent);
-                        app.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-                    }
-                });
+                return !BRSharedPrefs.getUseFingerprint(context) && Utils.isFingerprintAvailable(context);
             case PAPER_KEY:
-                return new PromptInfo(app.getString(R.string.Prompts_PaperKey_title), app.getString(R.string.Prompts_PaperKey_body), new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View view)
-                    {
-                        Intent intent = new Intent(app, WriteDownActivity.class);
-                        app.startActivity(intent);
-                        app.overridePendingTransition(R.anim.enter_from_bottom, R.anim.fade_down);
-                    }
-                });
+                return !BRSharedPrefs.getPhraseWroteDown(context);
             case UPGRADE_PIN:
-                return new PromptInfo(app.getString(R.string.Prompts_UpgradePin_title), app.getString(R.string.Prompts_UpgradePin_body), new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        Intent intent = new Intent(app, UpdatePinActivity.class);
-                        app.startActivity(intent);
-                        app.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
-                    }
-                });
+                return BRKeyStore.getPinCode(context).length() != 6;
             case RECOMMEND_RESCAN:
-                return new PromptInfo(app.getString(R.string.Prompts_RecommendRescan_title), app.getString(R.string.Prompts_RecommendRescan_body), new View.OnClickListener()
-                {
-                    @Override
-                    public void onClick(View v)
-                    {
-                        BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                BRSharedPrefs.putStartHeight(app, 0);
-                                BRPeerManager.getInstance().rescan();
-                                BRSharedPrefs.putScanRecommended(app, false);
-                            }
-                        });
-                    }
-                });
-
+                return BRSharedPrefs.getScanRecommended(context);
         }
-        return null;
+        return false;
     }
 
     /**

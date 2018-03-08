@@ -17,9 +17,12 @@ import android.widget.TextView;
 
 import com.platform.tools.KVStoreManager;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -82,7 +85,7 @@ public class TransactionListAdapter extends RecyclerView.Adapter<ListItemViewHol
     public void removeSection(int aSectionId)
     {
         theItemDataList.remove(aSectionId);
-        this.notifyDataSetChanged();
+        this.notifyDataSetChanged(); // TODO: Notify correct range position
     }
 
     public ArrayList<ListItemData> getItemsInSection(int aSectionId)
@@ -92,31 +95,13 @@ public class TransactionListAdapter extends RecyclerView.Adapter<ListItemViewHol
 
     public void updateSection(int aSectionId)
     {
-        this.notifyDataSetChanged();
+        this.notifyDataSetChanged(); // TODO: Notify correct range position
     }
 
     public void addItemsInSection(int aSectionId, ArrayList<ListItemData> anItemDataList)
     {
         theItemDataList.put(aSectionId, anItemDataList);
-        this.notifyDataSetChanged();
-    }
-
-    public void addItemInSection(int aSectionId, ListItemData aListItem)
-    {
-        ArrayList<ListItemData> listItems = theItemDataList.get(aSectionId);
-        if(null == listItems)
-        {
-            listItems = new ArrayList<>();
-            theItemDataList.put(aSectionId, listItems);
-        }
-        listItems.add(aListItem);
-        this.notifyDataSetChanged(); // TODO: Notify correct position
-    }
-
-    public void removeItemsInSection(int aSectionId)
-    {
-        theItemDataList.put(aSectionId, new ArrayList<ListItemData>());
-        this.notifyDataSetChanged();
+        this.notifyDataSetChanged(); // TODO: Notify correct range position
     }
 
     public void removeItemInSection(int aSectionId, ListItemData aListItem)
@@ -124,7 +109,7 @@ public class TransactionListAdapter extends RecyclerView.Adapter<ListItemViewHol
         if(null != theItemDataList.get(aSectionId))
         {
             theItemDataList.get(aSectionId).remove(aListItem);
-            this.notifyDataSetChanged(); // TODO: Notify correct position
+            this.notifyDataSetChanged(); // TODO: Notify correct item position
         }
     }
 

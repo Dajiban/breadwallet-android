@@ -1,7 +1,9 @@
 package io.digibyte.presenter.activities;
 
 import android.animation.LayoutTransition;
+import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -16,6 +18,7 @@ import android.support.constraint.ConstraintSet;
 import android.support.transition.TransitionManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.ImageButton;
@@ -32,6 +35,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 import io.digibyte.R;
+import io.digibyte.presenter.activities.intro.WriteDownActivity;
+import io.digibyte.presenter.activities.settings.FingerprintActivity;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRSearchBar;
 import io.digibyte.presenter.entities.TxItem;
@@ -39,10 +44,14 @@ import io.digibyte.presenter.fragments.FragmentManage;
 import io.digibyte.tools.adapter.TransactionListAdapter;
 import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.list.ListItemData;
+import io.digibyte.tools.list.items.ListItemPromptData;
+import io.digibyte.tools.list.items.ListItemPromptViewHolder;
 import io.digibyte.tools.list.items.ListItemSyncingData;
 import io.digibyte.tools.list.items.ListItemTransactionData;
+import io.digibyte.tools.manager.BREventManager;
 import io.digibyte.tools.manager.BRSharedPrefs;
 import io.digibyte.tools.manager.InternetManager;
+import io.digibyte.tools.manager.PromptManager;
 import io.digibyte.tools.manager.SyncManager;
 import io.digibyte.tools.manager.SyncService;
 import io.digibyte.tools.manager.TxManager;
@@ -90,7 +99,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
 {
     private static final String TAG = BreadActivity.class.getName();
 
-    private final int LIST_SECTION_PROMPT = 0;
+    private final int LIST_SECTION_INFORMATION = 0;
     private final int LIST_SECTION_TRANSACTIONS = 1;
 
     private InternetManager mConnectionReceiver;
@@ -135,10 +144,11 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     ConstraintLayout toolBarConstraintLayout;
 
     @BindView(R.id.tx_list)
-    RecyclerView theListView;
+    RecyclerView listView;
 
-    private ListItemSyncingData theListItemSyncingData;
-    private TransactionListAdapter theTransactionListAdapter;
+    private ListItemPromptData listItemPromptData;
+    private ListItemSyncingData listItemSyncingData;
+    private TransactionListAdapter listViewAdapter;
     private String savedFragmentTag;
     private Unbinder unbinder;
     private Handler handler = new Handler(Looper.getMainLooper());
@@ -149,7 +159,9 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bread);
         unbinder = ButterKnife.bind(this);
+
         initializeViews();
+        setupInformationListPromptSwipe();
 
         BRWalletManager.getInstance().addBalanceChangedListener(this);
         BRPeerManager.getInstance().addStatusUpdateListener(this);
@@ -162,7 +174,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
 
         oneTimeGreeting();
         updateUI();
-        updateList();
+        updateInformationListSection();
     }
 
     private void oneTimeGreeting() {
@@ -192,12 +204,12 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         searchIcon.setOnClickListener(this.onButtonSearch);
 
         // Setup list view
-        theListView.setItemAnimator(null);
-        theListView.setLayoutManager(new LinearLayoutManager(this));
-        theTransactionListAdapter = new TransactionListAdapter();
-        theTransactionListAdapter.addSection(LIST_SECTION_PROMPT);
-        theTransactionListAdapter.addSection(LIST_SECTION_TRANSACTIONS);
-        theListView.setAdapter(theTransactionListAdapter);
+        listView.setItemAnimator(null);
+        listView.setLayoutManager(new LinearLayoutManager(this));
+        listViewAdapter = new TransactionListAdapter();
+        listViewAdapter.addSection(LIST_SECTION_INFORMATION);
+        listViewAdapter.addSection(LIST_SECTION_TRANSACTIONS);
+        listView.setAdapter(listViewAdapter);
 
         // TODO: Programmatically swapping the content of a ViewGroup :( Jeez.... FIX>>>>>ASAP
         toolbarLayout.removeView(walletProgressLayout);
@@ -244,20 +256,56 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         });
     }
 
-    private void updateList()
+    private void updateInformationListSection()
     {
+        ArrayList<ListItemData> informationList = new ArrayList<>();
+
         if(SyncManager.getInstance().isRunning())
         {
-            if(null == theListItemSyncingData)
-            {
-                theListItemSyncingData = new ListItemSyncingData();
-                theTransactionListAdapter.addItemInSection(LIST_SECTION_PROMPT, theListItemSyncingData);
-            }
+            informationList.add(new ListItemSyncingData());
         }
         else
         {
-            // TODO: Show propmt
+            PromptManager.PromptItem promptItem = PromptManager.getInstance().nextPrompt();
+            if (null != promptItem)
+            {
+                informationList.add(new ListItemPromptData(promptItem, onPromptListItemClick, onPromptListItemCloseClick));
+                BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(promptItem) + ".displayed");
+            }
         }
+
+        listViewAdapter.addItemsInSection(LIST_SECTION_INFORMATION, informationList);
+    }
+
+    private void setupInformationListPromptSwipe()
+    {
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT)
+        {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
+            {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir)
+            {
+                ListItemPromptViewHolder listItemViewHolder = (ListItemPromptViewHolder) viewHolder;
+                onPromptListItemCloseClick.onListItemClick(listItemViewHolder.getItemData());
+            }
+
+            @Override
+            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
+            {
+                if (viewHolder instanceof ListItemPromptViewHolder)
+                {
+                    return super.getSwipeDirs(recyclerView, viewHolder);
+                }
+                return 0;
+            }
+        };
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(listView);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -270,7 +318,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         {
             int position = 0;
             ArrayList<TxItem> transactionItems = new ArrayList<>();
-            ArrayList<ListItemData> transactionList = theTransactionListAdapter.getItemsInSection(LIST_SECTION_TRANSACTIONS);
+            ArrayList<ListItemData> transactionList = listViewAdapter.getItemsInSection(LIST_SECTION_TRANSACTIONS);
             for(int index = 0; index < transactionList.size(); index++)
             {
                 ListItemTransactionData listItem = (ListItemTransactionData) transactionList.get(index);
@@ -289,7 +337,46 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         @Override
         public void onListItemClick(ListItemData aListItemData)
         {
-            // TODO: Do prompt stuff?
+            Intent intent;
+            final Activity activity = BreadActivity.this;
+            ListItemPromptData data = (ListItemPromptData) aListItemData;
+
+            BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(data.promptItem) + ".trigger");
+
+            switch (data.promptItem)
+            {
+                case SYNCING:
+                    break;
+                case FINGER_PRINT:
+                    intent = new Intent(activity, FingerprintActivity.class);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+                    break;
+                case PAPER_KEY:
+                    intent = new Intent(activity, WriteDownActivity.class);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(R.anim.enter_from_bottom, R.anim.fade_down);
+                    break;
+                case UPGRADE_PIN:
+                    intent = new Intent(activity, UpdatePinActivity.class);
+                    activity.startActivity(intent);
+                    activity.overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
+                    break;
+                case RECOMMEND_RESCAN:
+                    BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable()
+                    {
+                        @Override
+                        public void run()
+                        {
+                            BRSharedPrefs.putStartHeight(activity, 0);
+                            BRPeerManager.getInstance().rescan();
+                            BRSharedPrefs.putScanRecommended(activity, false);
+                        }
+                    });
+                    break;
+                case NO_PASS_CODE:
+                    break;
+            }
         }
     };
 
@@ -298,7 +385,11 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         @Override
         public void onListItemClick(ListItemData aListItemData)
         {
-            // TODO: Hide prompt stuff?
+            ListItemPromptData data = (ListItemPromptData) aListItemData;
+
+            BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(data.promptItem) + ".dismissed");
+
+            updateInformationListSection();
         }
     };
 
@@ -308,14 +399,14 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     @Override
     public void onSyncManagerStart()
     {
-        this.updateList();
+        this.updateInformationListSection();
     }
 
     public void onSyncManagerUpdate()
     {
-        if(null != theListItemSyncingData)
+        if(null != listItemSyncingData)
         {
-            theTransactionListAdapter.updateSection(LIST_SECTION_PROMPT);
+            listViewAdapter.updateSection(LIST_SECTION_INFORMATION);
         }
     }
 
@@ -324,10 +415,10 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     {
         if(!SyncManager.getInstance().isRunning())
         {
-            if(null != theListItemSyncingData)
+            if(null != listItemSyncingData)
             {
-                theTransactionListAdapter.removeItemInSection(LIST_SECTION_PROMPT, theListItemSyncingData);
-                theListItemSyncingData = null;
+                listViewAdapter.removeItemInSection(LIST_SECTION_INFORMATION, listItemSyncingData);
+                listItemSyncingData = null;
             }
         }
     }
@@ -335,18 +426,17 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     @Override
     public void onTxManagerUpdate(TxItem[] aTransactionList)
     {
-        if (aTransactionList == null)
+        if (null != aTransactionList)
         {
-            return;
-        }
-        ArrayList<ListItemData> transactionList = new ArrayList<>();
+            ArrayList<ListItemData> transactionList = new ArrayList<>();
 
-        int transactionsCount = aTransactionList.length;
-        for(int index = 0; index < transactionsCount; index++)
-        {
-            transactionList.add(new ListItemTransactionData(index, transactionsCount, aTransactionList[index], onTransactionListItemClick));
+            int transactionsCount = aTransactionList.length;
+            for (int index = 0; index < transactionsCount; index++)
+            {
+                transactionList.add(new ListItemTransactionData(index, transactionsCount, aTransactionList[index], onTransactionListItemClick));
+            }
+            listViewAdapter.addItemsInSection(LIST_SECTION_TRANSACTIONS, transactionList);
         }
-        theTransactionListAdapter.addItemsInSection(LIST_SECTION_TRANSACTIONS, transactionList);
     }
 
     @Override
@@ -656,12 +746,6 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         BRAnimator.showFragmentByTag(this, savedFragmentTag);
         savedFragmentTag = null;
         TxManager.getInstance().onResume(BreadActivity.this);
-    }
-
-    @Override
-    protected void onRestart()
-    {
-        super.onRestart();
     }
 
     @Override

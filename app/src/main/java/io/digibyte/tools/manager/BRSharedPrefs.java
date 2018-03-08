@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import io.digibyte.DigiByte;
 import io.digibyte.tools.util.BRConstants;
 
 import org.json.JSONArray;

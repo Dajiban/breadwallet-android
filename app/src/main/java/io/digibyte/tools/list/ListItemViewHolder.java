@@ -6,6 +6,7 @@ import android.view.View;
 public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener
 {
     protected ListItemData theItemData;
+    public ListItemData getItemData() { return theItemData; }
 
     public ListItemViewHolder(View itemView)
     {

@@ -96,7 +96,7 @@ public class TxManager
                         }
                         else
                         {
-                            showNextPrompt(app);
+                            //showNextPrompt(app);
                         }
                     }
                 });
@@ -121,66 +121,6 @@ public class TxManager
         });
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public void showPrompt(Activity app, PromptManager.PromptItem item)
-    {
-        crashIfNotMain();
-        if (item == null)
-        {
-            throw new RuntimeException("can't be null");
-        }
-        BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(item) + ".displayed");
-        updateCard();
-    }
-
-    public void hidePrompt(final Activity app, final PromptManager.PromptItem item)
-    {
-        crashIfNotMain();
-        if (item == PromptManager.PromptItem.SYNCING)
-        {
-            showNextPrompt(app);
-            updateCard();
-        }
-        else
-        {
-            if (item != null)
-            {
-                BREventManager.getInstance().pushEvent("prompt." + PromptManager.getInstance().getPromptName(item) + ".dismissed");
-            }
-
-        }
-    }
-
-    private void showNextPrompt(Activity app)
-    {
-        crashIfNotMain();
-        PromptManager.PromptItem toShow = PromptManager.getInstance().nextPrompt(app);
-        if (toShow != null)
-        {
-            updateCard();
-        }
-        else
-        {
-            Log.i(TAG, "showNextPrompt: nothing to show");
-        }
-    }
-
     public void updateCard()
     {
         BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable()
@@ -191,40 +131,6 @@ public class TxManager
                 updateTxList();
             }
         });
-    }
-
-    private void setupSwipe(final Activity app)
-    {
-        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.RIGHT)
-        {
-
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target)
-            {
-                //                Toast.makeText(BreadActivity.this, "on Move ", Toast.LENGTH_SHORT).show();
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir)
-            {
-                hidePrompt(app, null);
-                //Remove swiped item from list and notify the RecyclerView
-            }
-
-            @Override
-            public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder)
-            {
-                if (!(viewHolder instanceof TransactionListAdapter.PromptHolder))
-                {
-                    return 0;
-                }
-                return super.getSwipeDirs(recyclerView, viewHolder);
-            }
-        };
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        // TODO: FIx this
-        //itemTouchHelper.attachToRecyclerView(txList);
     }
 
 
