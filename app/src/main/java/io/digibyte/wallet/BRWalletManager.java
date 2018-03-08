@@ -556,7 +556,7 @@ public class BRWalletManager
                             }
                         }
 
-                        if (!BreadActivity.appVisible && BRSharedPrefs.getShowNotification(finalCtx))
+                        if (!(DigiByte.getBreadContext() instanceof BreadActivity) && BRSharedPrefs.getShowNotification(finalCtx))
                         {
                             BRNotificationManager.sendNotification(finalCtx, R.drawable.notification_icon, finalCtx.getString(R.string.app_name), message, 1);
                         }

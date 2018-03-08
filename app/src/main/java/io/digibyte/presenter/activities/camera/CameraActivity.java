@@ -8,7 +8,6 @@ import android.app.DialogFragment;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.ImageFormat;
@@ -38,21 +37,11 @@ import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.util.Size;
 import android.util.SparseIntArray;
-import android.view.LayoutInflater;
 import android.view.Surface;
-import android.view.SurfaceView;
 import android.view.TextureView;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
-import io.digibyte.presenter.activities.util.BRActivity;
-import io.digibyte.tools.threads.BRExecutor;
 import com.platform.middlewares.plugins.CameraPlugin;
 
 import java.io.File;
@@ -64,6 +53,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+
+import io.digibyte.DigiByte;
+import io.digibyte.R;
+import io.digibyte.presenter.activities.util.BRActivity;
+import io.digibyte.tools.threads.BRExecutor;
 
 
 /**
@@ -902,7 +896,7 @@ public class CameraActivity extends BRActivity implements View.OnClickListener, 
                         public void run() {
                             try {
                                 Thread.sleep(1000);
-                                CameraPlugin.handleCameraImageTaken(BreadActivity.getApp(), bytes);
+                                CameraPlugin.handleCameraImageTaken(DigiByte.context, bytes);
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }

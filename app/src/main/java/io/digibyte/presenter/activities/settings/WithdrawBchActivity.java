@@ -2,6 +2,7 @@ package io.digibyte.presenter.activities.settings;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -10,14 +11,13 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.math.BigDecimal;
+
 import io.digibyte.DigiByte;
 import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRDialogView;
 import io.digibyte.presenter.customviews.BRToast;
-import io.digibyte.presenter.entities.RequestObject;
 import io.digibyte.presenter.interfaces.BRAuthCompletion;
 import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.animation.BRDialog;
@@ -25,7 +25,6 @@ import io.digibyte.tools.manager.BRClipboardManager;
 import io.digibyte.tools.manager.BRReportsManager;
 import io.digibyte.tools.manager.BRSharedPrefs;
 import io.digibyte.tools.security.AuthManager;
-import io.digibyte.tools.security.BitcoinUrlHandler;
 import io.digibyte.tools.security.BRKeyStore;
 import io.digibyte.tools.security.PostAuth;
 import io.digibyte.tools.threads.BRExecutor;
@@ -34,8 +33,6 @@ import io.digibyte.tools.util.BRExchange;
 import io.digibyte.tools.util.Utils;
 import io.digibyte.wallet.BRPeerManager;
 import io.digibyte.wallet.BRWalletManager;
-
-import java.math.BigDecimal;
 
 import static io.digibyte.tools.util.BRConstants.SCANNER_BCH_REQUEST;
 
@@ -87,7 +84,8 @@ public class WithdrawBchActivity extends BRActivity {
             public void onClick(View v) {
                 if (!BRAnimator.isClickAllowed()) return;
                 BRClipboardManager.putClipboard(WithdrawBchActivity.this, txHash.getText().toString().trim());
-                BRToast.showCustomToast(WithdrawBchActivity.this, getString(R.string.BCH_hashCopiedMessage), BreadActivity.screenParametersPoint.y / 2, Toast.LENGTH_LONG, 0);
+                int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+                BRToast.showCustomToast(WithdrawBchActivity.this, getString(R.string.BCH_hashCopiedMessage), screenHeight / 2, Toast.LENGTH_LONG, 0);
             }
         });
 

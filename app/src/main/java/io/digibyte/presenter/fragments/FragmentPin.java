@@ -2,6 +2,7 @@ package io.digibyte.presenter.fragments;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -16,8 +17,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
 import io.digibyte.presenter.customviews.BRKeyboard;
 import io.digibyte.presenter.interfaces.BRAuthCompletion;
 import io.digibyte.tools.animation.DecelerateOvershootInterpolator;
@@ -133,7 +132,8 @@ public class FragmentPin extends Fragment {
             customMessage = messageString;
             message.setText(customMessage);
         }
-        keyboard.setTranslationY(keyboardTrY + BreadActivity.screenParametersPoint.y / 3);
+        int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+        keyboard.setTranslationY(keyboardTrY + screenHeight / 3);
         keyboard.animate()
                 .translationY(keyboardTrY)
                 .setDuration(400)

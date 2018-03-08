@@ -1,27 +1,24 @@
 package io.digibyte.tools.threads;
 
-import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+
 import io.digibyte.DigiByte;
 import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
 import io.digibyte.presenter.customviews.BRToast;
 import io.digibyte.presenter.entities.PaymentRequestWrapper;
 import io.digibyte.tools.security.BitcoinUrlHandler;
 import io.digibyte.tools.util.BytesUtil;
-
-import java.io.DataOutputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 
 
 /**
@@ -151,8 +148,8 @@ public class PaymentProtocolPostPaymentTask extends AsyncTask<String, String, St
         Context app = DigiByte.getBreadContext();
         if (app != null && message != null) {
             if (!message.isEmpty()) {
-                BRToast.
-                        showCustomToast(app, message, BreadActivity.screenParametersPoint.y / 2, Toast.LENGTH_LONG, R.drawable.toast_layout_black);
+                int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+                BRToast.showCustomToast(app, message, screenHeight / 2, Toast.LENGTH_LONG, R.drawable.toast_layout_black);
             } else {
                 if (!waiting && !sent && pendingErrorMessages.get(MESSAGE) != null) {
 //                    BreadDialog.

@@ -9,19 +9,13 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import io.digibyte.R;
-import io.digibyte.presenter.activities.settings.WebViewActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRKeyboard;
-import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.manager.BRSharedPrefs;
-import io.digibyte.tools.util.BRConstants;
-import com.platform.HTTPServer;
 
 public class SetPinActivity extends BRActivity {
     private static final String TAG = SetPinActivity.class.getName();
     private BRKeyboard keyboard;
-    public static SetPinActivity introSetPitActivity;
     private View dot1;
     private View dot2;
     private View dot3;
@@ -80,7 +74,6 @@ public class SetPinActivity extends BRActivity {
     protected void onResume() {
         super.onResume();
         updateDots();
-        introSetPitActivity = this;
         appVisible = true;
         app = this;
     }
