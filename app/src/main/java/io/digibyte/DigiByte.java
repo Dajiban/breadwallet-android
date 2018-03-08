@@ -9,10 +9,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
 
-import io.digibyte.presenter.activities.util.BRActivity;
-import io.digibyte.tools.listeners.SyncReceiver;
-import io.digibyte.tools.util.Utils;
-
 import com.buglife.sdk.Buglife;
 import com.buglife.sdk.InvocationMethod;
 import com.google.firebase.crash.FirebaseCrash;
@@ -22,6 +18,10 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.digibyte.presenter.activities.util.BRActivity;
+import io.digibyte.tools.listeners.SyncReceiver;
+import io.digibyte.tools.util.Utils;
 
 
 /**
@@ -62,10 +62,12 @@ public class DigiByte extends Application {
     public static boolean appInBackground;
 
     private static Activity currentActivity;
+    public static Application context;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        context = this;
         if (Utils.isEmulatorOrDebug(this)) {
 //            BRKeyStore.putFailCount(0, this);
 //            HOST = "stage2.breadwallet.com";

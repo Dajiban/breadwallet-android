@@ -21,6 +21,7 @@ import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.res.Resources;
 import android.hardware.fingerprint.FingerprintManager;
 import android.os.Bundle;
 import android.os.Handler;
@@ -37,7 +38,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
 import io.digibyte.presenter.interfaces.BRAuthCompletion;
 import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.animation.DecelerateOvershootInterpolator;
@@ -236,7 +236,8 @@ public class FragmentFingerprint extends Fragment
     private void animateSignalSlide(final boolean reverse) {
         float layoutTY = fingerPrintLayout.getTranslationY();
         if (!reverse) {
-            fingerPrintLayout.setTranslationY(layoutTY + BreadActivity.screenParametersPoint.y);
+            int screenHeight = Resources.getSystem().getDisplayMetrics().heightPixels;
+            fingerPrintLayout.setTranslationY(layoutTY + screenHeight);
             fingerPrintLayout.animate()
                     .translationY(layoutTY)
                     .setDuration(ANIMATION_DURATION + 200)

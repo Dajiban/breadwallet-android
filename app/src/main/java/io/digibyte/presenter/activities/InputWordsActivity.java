@@ -3,19 +3,16 @@ package io.digibyte.presenter.activities;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import io.digibyte.R;
 import io.digibyte.presenter.activities.intro.IntroActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRDialogView;
 import io.digibyte.tools.animation.BRAnimator;
@@ -25,9 +22,7 @@ import io.digibyte.tools.manager.BRSharedPrefs;
 import io.digibyte.tools.security.AuthManager;
 import io.digibyte.tools.security.PostAuth;
 import io.digibyte.tools.security.SmartValidator;
-import io.digibyte.tools.util.BRConstants;
 import io.digibyte.tools.util.Utils;
-import io.digibyte.tools.util.Bip39Reader;
 import io.digibyte.wallet.BRWalletManager;
 
 public class InputWordsActivity extends BRActivity {
@@ -238,12 +233,9 @@ public class InputWordsActivity extends BRActivity {
     }
 
     private void finalizeIntent(Intent intent) {
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
         startActivity(intent);
-        if (!InputWordsActivity.this.isDestroyed()) finish();
-        Activity app = BreadActivity.getApp();
-        if (app != null && !app.isDestroyed()) app.finish();
     }
 
     @Override

@@ -5,13 +5,6 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import io.digibyte.DigiByte;
-import io.digibyte.presenter.entities.CurrencyEntity;
-import io.digibyte.tools.sqlite.CurrencyDataSource;
-import io.digibyte.tools.threads.BRExecutor;
-import io.digibyte.tools.util.Utils;
-import io.digibyte.wallet.BRWalletManager;
-
 import com.google.firebase.crash.FirebaseCrash;
 import com.platform.APIClient;
 
@@ -32,9 +25,16 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static io.digibyte.presenter.fragments.FragmentSend.isEconomyFee;
+import io.digibyte.DigiByte;
+import io.digibyte.presenter.entities.CurrencyEntity;
+import io.digibyte.tools.sqlite.CurrencyDataSource;
+import io.digibyte.tools.threads.BRExecutor;
+import io.digibyte.tools.util.Utils;
+import io.digibyte.wallet.BRWalletManager;
 import okhttp3.Request;
 import okhttp3.Response;
+
+import static io.digibyte.presenter.fragments.FragmentSend.isEconomyFee;
 
 /**
  * BreadWallet
@@ -219,7 +219,7 @@ public class BRApiManager {
                 FirebaseCrash.report(new NullPointerException("Economy fee is weird:" + economyFee));
             }
         } catch (JSONException e) {
-            Log.e(TAG, "updateFeePerKb: FAILED: " + jsonString, e);
+            //Log.e(TAG, "updateFeePerKb: FAILED: " + jsonString, e);
             BRReportsManager.reportBug(e);
             BRReportsManager.reportBug(new IllegalArgumentException("JSON ERR: " + jsonString));
         }

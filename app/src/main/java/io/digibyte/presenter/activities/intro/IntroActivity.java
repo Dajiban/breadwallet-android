@@ -10,9 +10,12 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 
+import com.platform.APIClient;
+
+import java.io.Serializable;
+
 import io.digibyte.BuildConfig;
 import io.digibyte.R;
-import io.digibyte.presenter.activities.BreadActivity;
 import io.digibyte.presenter.activities.SetPinActivity;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.tools.animation.BRAnimator;
@@ -23,10 +26,6 @@ import io.digibyte.tools.security.SmartValidator;
 import io.digibyte.tools.threads.BRExecutor;
 import io.digibyte.tools.util.Utils;
 import io.digibyte.wallet.BRWalletManager;
-
-import com.platform.APIClient;
-
-import java.io.Serializable;
 
 
 /**
@@ -58,15 +57,9 @@ public class IntroActivity extends BRActivity implements Serializable {
     private static final String TAG = IntroActivity.class.getName();
     public Button newWalletButton;
     public Button recoverWalletButton;
-    public static IntroActivity introActivity;
     public static boolean appVisible = false;
-    private static IntroActivity app;
     private View splashScreen;
     private ImageButton faq;
-
-    public static IntroActivity getApp() {
-        return app;
-    }
 
     public static final Point screenParametersPoint = new Point();
 
@@ -99,7 +92,6 @@ public class IntroActivity extends BRActivity implements Serializable {
             Log.e(TAG, "onCreate: BRKeyStore.AUTH_DURATION_SEC != 300");
             BRReportsManager.reportBug(new RuntimeException("AUTH_DURATION_SEC should be 300"), true);
         }
-        introActivity = this;
 
         getWindowManager().getDefaultDisplay().getSize(screenParametersPoint);
 
@@ -145,9 +137,8 @@ public class IntroActivity extends BRActivity implements Serializable {
             @Override
             public void onClick(View v) {
                 if (!BRAnimator.isClickAllowed()) return;
-                BreadActivity bApp = BreadActivity.getApp();
-                if (bApp != null) bApp.finish();
                 Intent intent = new Intent(IntroActivity.this, SetPinActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
             }
@@ -157,9 +148,8 @@ public class IntroActivity extends BRActivity implements Serializable {
             @Override
             public void onClick(View v) {
                 if (!BRAnimator.isClickAllowed()) return;
-                BreadActivity bApp = BreadActivity.getApp();
-                if (bApp != null) bApp.finish();
                 Intent intent = new Intent(IntroActivity.this, RecoverActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
                 overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
             }
@@ -170,8 +160,6 @@ public class IntroActivity extends BRActivity implements Serializable {
     protected void onResume() {
         super.onResume();
         appVisible = true;
-        app = this;
-
     }
 
     @Override
@@ -190,11 +178,8 @@ public class IntroActivity extends BRActivity implements Serializable {
         super.onStop();
     }
 
-
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
     }
-
 }

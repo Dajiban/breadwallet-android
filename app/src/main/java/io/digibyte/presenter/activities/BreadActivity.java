@@ -5,11 +5,11 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
-import android.graphics.Point;
 import android.net.ConnectivityManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.NonNull;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
@@ -18,8 +18,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -30,6 +28,9 @@ import com.platform.APIClient;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.Unbinder;
 import io.digibyte.R;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRSearchBar;
@@ -38,7 +39,6 @@ import io.digibyte.presenter.fragments.FragmentManage;
 import io.digibyte.tools.adapter.TransactionListAdapter;
 import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.list.ListItemData;
-import io.digibyte.tools.list.items.ListItemPromptData;
 import io.digibyte.tools.list.items.ListItemSyncingData;
 import io.digibyte.tools.list.items.ListItemTransactionData;
 import io.digibyte.tools.manager.BRSharedPrefs;
@@ -57,9 +57,6 @@ import io.digibyte.tools.util.Utils;
 import io.digibyte.wallet.BRPeerManager;
 import io.digibyte.wallet.BRWalletManager;
 
-import static io.digibyte.presenter.activities.ReEnterPinActivity.reEnterPinActivity;
-import static io.digibyte.presenter.activities.SetPinActivity.introSetPitActivity;
-import static io.digibyte.presenter.activities.intro.IntroActivity.introActivity;
 import static io.digibyte.tools.animation.BRAnimator.t1Size;
 import static io.digibyte.tools.animation.BRAnimator.t2Size;
 import static io.digibyte.tools.util.BRConstants.PLATFORM_ON;
@@ -98,46 +95,61 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
 
     private InternetManager mConnectionReceiver;
 
-    private LinearLayout sendButton;
-    private LinearLayout receiveButton;
-    private LinearLayout menuButton;
-    private TextView primaryPrice;
-    private TextView secondaryPrice;
-    private TextView equals;
-    private TextView manageText;
-    private ConstraintLayout walletProgressLayout;
-    private LinearLayout toolbarLayout;
-    private ImageButton searchIcon;
-    private BRSearchBar searchBar;
+    @BindView(R.id.send_layout)
+    LinearLayout sendButton;
+
+    @BindView(R.id.receive_layout)
+    LinearLayout receiveButton;
+
+    @BindView(R.id.manage_text)
+    TextView manageText;
+
+    @BindView(R.id.menu_layout)
+    LinearLayout menuButton;
+
+    @BindView(R.id.primary_price)
+    TextView primaryPrice;
+
+    @BindView(R.id.secondary_price)
+    TextView secondaryPrice;
+
+    @BindView(R.id.equals)
+    TextView equals;
+
+    @BindView(R.id.loading_wallet_layout)
+    ConstraintLayout walletProgressLayout;
+
+    @BindView(R.id.toolbar_layout)
+    LinearLayout toolbarLayout;
+
+    @BindView(R.id.search_icon)
+    ImageButton searchIcon;
+
+    @BindView(R.id.search_bar)
+    BRSearchBar searchBar;
+
+    @BindView(R.id.tool_bar_flipper)
     public ViewFlipper barFlipper;
 
-    private RecyclerView theListView;
-    private ListItemPromptData theListItemPromptData;
+    @BindView(R.id.bread_toolbar)
+    ConstraintLayout toolBarConstraintLayout;
+
+    @BindView(R.id.tx_list)
+    RecyclerView theListView;
+
     private ListItemSyncingData theListItemSyncingData;
     private TransactionListAdapter theTransactionListAdapter;
-
-    private ConstraintLayout toolBarConstraintLayout;
     private String savedFragmentTag;
-    private boolean uiIsDone;
-
-    // TODO: Remove/cleanup this block
-    public static boolean appVisible = false;
-    private static BreadActivity app;
-    public static BreadActivity getApp() { return app; }
-    public static final Point screenParametersPoint = new Point();
-
+    private Unbinder unbinder;
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bread);
-
-        // TODO: Remove/cleanup this block
-        getWindowManager().getDefaultDisplay().getSize(screenParametersPoint);
-        app = this;
-
-        this.initializeViews();
+        unbinder = ButterKnife.bind(this);
+        initializeViews();
 
         BRWalletManager.getInstance().addBalanceChangedListener(this);
         BRPeerManager.getInstance().addStatusUpdateListener(this);
@@ -146,25 +158,17 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         TxManager.getInstance().addListener(this);
         SyncManager.getInstance().addListener(this);
 
-        this.onConnectionChanged(InternetManager.getInstance().isConnected(this));
+        onConnectionChanged(InternetManager.getInstance().isConnected(this));
 
-        // TODO: Remove/cleanup this block
-        if (introSetPitActivity != null)
-        {
-            introSetPitActivity.finish();
-        }
-        if (introActivity != null)
-        {
-            introActivity.finish();
-        }
-        if (reEnterPinActivity != null)
-        {
-            reEnterPinActivity.finish();
-        }
+        oneTimeGreeting();
+        updateUI();
+        updateList();
+    }
 
+    private void oneTimeGreeting() {
         if (!BRSharedPrefs.getGreetingsShown(BreadActivity.this))
         {
-            new Handler().postDelayed(new Runnable()
+            handler.postDelayed(new Runnable()
             {
                 @Override
                 public void run()
@@ -174,27 +178,10 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
                 }
             }, 1000);
         }
-
-        this.updateUI();
-        this.updateList();
     }
 
     private void initializeViews()
     {
-        sendButton = findViewById(R.id.send_layout);
-        receiveButton = findViewById(R.id.receive_layout);
-        manageText = findViewById(R.id.manage_text);
-        menuButton = findViewById(R.id.menu_layout);
-        primaryPrice = findViewById(R.id.primary_price);
-        secondaryPrice = findViewById(R.id.secondary_price);
-        equals = findViewById(R.id.equals);
-        toolBarConstraintLayout = findViewById(R.id.bread_toolbar);
-        walletProgressLayout = findViewById(R.id.loading_wallet_layout);
-        toolbarLayout = findViewById(R.id.toolbar_layout);
-        searchIcon = findViewById(R.id.search_icon);
-        barFlipper = findViewById(R.id.tool_bar_flipper);
-        searchBar = findViewById(R.id.search_bar);
-
         // Set listeners
         sendButton.setOnClickListener(this.onButtonSend);
         receiveButton.setOnClickListener(this.onButtonReceive);
@@ -205,7 +192,6 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         searchIcon.setOnClickListener(this.onButtonSearch);
 
         // Setup list view
-        theListView = findViewById(R.id.tx_list);
         theListView.setItemAnimator(null);
         theListView.setLayoutManager(new LinearLayoutManager(this));
         theTransactionListAdapter = new TransactionListAdapter();
@@ -213,30 +199,13 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         theTransactionListAdapter.addSection(LIST_SECTION_TRANSACTIONS);
         theListView.setAdapter(theTransactionListAdapter);
 
-        // Setup flipper bar
-        barFlipper.setInAnimation(AnimationUtils.loadAnimation(this, R.anim.flipper_enter));
-        barFlipper.setOutAnimation(AnimationUtils.loadAnimation(this, R.anim.flipper_exit));
-
-        // TODO: Remove/cleanup this block
+        // TODO: Programmatically swapping the content of a ViewGroup :( Jeez.... FIX>>>>>ASAP
         toolbarLayout.removeView(walletProgressLayout);
         primaryPrice.setTextSize(TypedValue.COMPLEX_UNIT_PX, t1Size);//make it the size it should be after animation to get the X
         secondaryPrice.setTextSize(TypedValue.COMPLEX_UNIT_PX, t2Size);//make it the size it should be after animation to get the X
-
-        final ViewTreeObserver observer = primaryPrice.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener()
-        {
+        handler.post(new Runnable() {
             @Override
-            public void onGlobalLayout()
-            {
-                if (observer.isAlive())
-                {
-                    observer.removeOnGlobalLayoutListener(this);
-                }
-                if (uiIsDone)
-                {
-                    return;
-                }
-                uiIsDone = true;
+            public void run() {
                 setPriceTags(BRSharedPrefs.getPreferredBTC(BreadActivity.this), false);
             }
         });
@@ -244,12 +213,9 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
 
     private void updateUI()
     {
-        BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable()
-        {
+        handler.post(new Runnable() {
             @Override
-            public void run()
-            {
-                Thread.currentThread().setName(Thread.currentThread().getName() + ":updateUI");
+            public void run() {
                 //sleep a little in order to make sure all the commits are finished (like SharePreferences commits)
                 String iso = BRSharedPrefs.getIso(BreadActivity.this);
 
@@ -263,7 +229,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
                 //amount in currency units
                 BigDecimal curAmount = BRExchange.getAmountFromSatoshis(BreadActivity.this, iso, amount);
                 final String formattedCurAmount = BRCurrency.getFormattedCurrencyString(BreadActivity.this, iso, curAmount);
-                runOnUiThread(new Runnable()
+                handler.post(new Runnable()
                 {
                     @Override
                     public void run()
@@ -290,7 +256,6 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         }
         else
         {
-
             // TODO: Show propmt
         }
     }
@@ -337,8 +302,6 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         }
     };
 
-
-
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////// Manager Listeners ////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -372,6 +335,10 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     @Override
     public void onTxManagerUpdate(TxItem[] aTransactionList)
     {
+        if (aTransactionList == null)
+        {
+            return;
+        }
         ArrayList<ListItemData> transactionList = new ArrayList<>();
 
         int transactionsCount = aTransactionList.length;
@@ -420,12 +387,9 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     {
         if (isConnected)
         {
-            if (barFlipper != null)
+            if (barFlipper.getDisplayedChild() == 2)
             {
-                if (barFlipper.getDisplayedChild() == 2)
-                {
-                    barFlipper.setDisplayedChild(0);
-                }
+                barFlipper.setDisplayedChild(0);
             }
 
             BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(new Runnable()
@@ -444,11 +408,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
         }
         else
         {
-            if (barFlipper != null)
-            {
-                barFlipper.setDisplayedChild(2);
-            }
-
+            barFlipper.setDisplayedChild(2);
             SyncManager.getInstance().stopSyncingProgressThread();
         }
     }
@@ -663,8 +623,6 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     protected void onResume()
     {
         super.onResume();
-        appVisible = true;
-        app = this;
         if (PLATFORM_ON)
         {
             APIClient.getInstance(this).updatePlatform();
@@ -704,14 +662,12 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     protected void onRestart()
     {
         super.onRestart();
-        app = this;
     }
 
     @Override
     protected void onPause()
     {
         super.onPause();
-        appVisible = false;
         saveVisibleFragment();
     }
 
@@ -719,7 +675,7 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
     protected void onDestroy()
     {
         super.onDestroy();
-
+        unbinder.unbind();
         unregisterReceiver(mConnectionReceiver);
         InternetManager.removeConnectionListener(this);
 

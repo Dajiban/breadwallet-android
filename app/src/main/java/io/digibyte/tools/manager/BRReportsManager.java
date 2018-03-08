@@ -44,11 +44,13 @@ public class BRReportsManager {
     }
 
     public static void reportBug(Exception er) {
-        Log.e(TAG, "reportBug: ", er);
+        //Log.e(TAG, "reportBug: ", er);
         try {
+            er.printStackTrace();;
             FirebaseCrash.report(er);
         } catch (Exception e) {
-            Log.e(TAG, "reportBug: failed to report to FireBase: ", e);
+            e.printStackTrace();
+            //Log.e(TAG, "reportBug: failed to report to FireBase: ", e);
         }
     }
 }

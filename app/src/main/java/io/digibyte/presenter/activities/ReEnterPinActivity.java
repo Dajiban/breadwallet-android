@@ -1,17 +1,13 @@
 package io.digibyte.presenter.activities;
 
-import android.content.Intent;
-import android.os.Handler;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import io.digibyte.R;
-import io.digibyte.presenter.activities.settings.WebViewActivity;
-import io.digibyte.presenter.activities.util.ActivityUTILS;
 import io.digibyte.presenter.activities.util.BRActivity;
 import io.digibyte.presenter.customviews.BRKeyboard;
 import io.digibyte.presenter.interfaces.BROnSignalCompletion;
@@ -19,14 +15,11 @@ import io.digibyte.tools.animation.BRAnimator;
 import io.digibyte.tools.animation.SpringAnimator;
 import io.digibyte.tools.security.AuthManager;
 import io.digibyte.tools.security.PostAuth;
-import io.digibyte.tools.util.BRConstants;
 import io.digibyte.tools.util.Utils;
-import com.platform.HTTPServer;
 
 public class ReEnterPinActivity extends BRActivity {
     private static final String TAG = ReEnterPinActivity.class.getName();
     private BRKeyboard keyboard;
-    public static ReEnterPinActivity reEnterPinActivity;
     private View dot1;
     private View dot2;
     private View dot3;
@@ -70,7 +63,6 @@ public class ReEnterPinActivity extends BRActivity {
         if (Utils.isNullOrEmpty(firstPIN)) {
             throw new RuntimeException("first PIN is required");
         }
-        reEnterPinActivity = this;
 
         dot1 = findViewById(R.id.dot1);
         dot2 = findViewById(R.id.dot2);
