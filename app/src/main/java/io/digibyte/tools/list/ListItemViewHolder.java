@@ -11,7 +11,6 @@ public class ListItemViewHolder extends RecyclerView.ViewHolder implements View.
     public ListItemViewHolder(View itemView)
     {
         super(itemView);
-
         this.itemView.setOnClickListener(this);
         this.itemView.setOnLongClickListener(this);
     }

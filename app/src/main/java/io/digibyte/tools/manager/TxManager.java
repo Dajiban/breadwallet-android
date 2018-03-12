@@ -133,7 +133,6 @@ public class TxManager
         });
     }
 
-
     private class CustomLinearLayoutManager extends LinearLayoutManager
     {
 

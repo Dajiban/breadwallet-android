@@ -290,8 +290,11 @@ public class BreadActivity extends BRActivity implements BRWalletManager.OnBalan
             @Override
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int swipeDir)
             {
-                ListItemPromptViewHolder listItemViewHolder = (ListItemPromptViewHolder) viewHolder;
-                onPromptListItemCloseClick.onListItemClick(listItemViewHolder.getItemData());
+                if (viewHolder instanceof ListItemPromptViewHolder)
+                {
+                    ListItemPromptViewHolder listItemViewHolder = (ListItemPromptViewHolder) viewHolder;
+                    onPromptListItemCloseClick.onListItemClick(listItemViewHolder.getItemData());
+                }
             }
 
             @Override
