@@ -33,6 +33,8 @@ add_library( # Specifies the name of the library.
              src/main/jni/digibytewallet-core/BRArray.h
              src/main/jni/digibytewallet-core/BRBase58.c
              src/main/jni/digibytewallet-core/BRBase58.h
+             src/main/jni/digibytewallet-core/BRBech32.c
+             src/main/jni/digibytewallet-core/BRBech32.h
              src/main/jni/digibytewallet-core/BRBIP32Sequence.c
              src/main/jni/digibytewallet-core/BRBIP32Sequence.h
              src/main/jni/digibytewallet-core/BRBIP38Key.c
