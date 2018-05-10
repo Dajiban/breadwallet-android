@@ -13,7 +13,7 @@ The DigiWallet is a rapidly developing mobile wallet for the Android platform. W
 
 #####beautiful simplicity:
 
-DigiWallet is an extremely simple presenation of how to store, receive, and send DigiByte. As we progress the Beta, release currently on the Google Play Store, new innovative user interface components will breath life into the product, and truly make it stand out amongst the croud.
+DigiWallet is an extremely simple presenation of how to store, receive, and send DigiByte. As we progress the Beta, currently released on the Google Play Store, new innovative user interface components will breath life into the product, and truly make it stand out amongst the croud.
 
 ##How to set up the development environment:
 1. Download and install Java 7 or up
