@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Uspešna provera autentičnosti</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID zahtev za proveru autentičnosti</string>
+  <string name="BitID.title">Digi-ID zahtev za proveru autentičnosti</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Otkaži</string>
   <!-- Ignore button label -->

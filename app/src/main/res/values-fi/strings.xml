@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">"Todennettu onnistuneesti "</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID todennus pyyntö</string>
+  <string name="BitID.title">Digi-ID todennus pyyntö</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Peruuta</string>
   <!-- Ignore button label -->

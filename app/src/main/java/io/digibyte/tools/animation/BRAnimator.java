@@ -99,30 +99,7 @@ public class BRAnimator {
     }
 
     public static void showSendFragment(Activity app, final String bitcoinUrl) {
-        if (app == null) {
-            Log.e(TAG, "showSendFragment: app is null");
-            return;
-        }
-        FragmentSend fragmentSend = (FragmentSend) app.getFragmentManager().findFragmentByTag(
-                FragmentSend.class.getName());
-        if (fragmentSend != null && fragmentSend.isAdded()) {
-            fragmentSend.setUrl(bitcoinUrl);
-            return;
-        }
-        try {
-            fragmentSend = new FragmentSend();
-            if (bitcoinUrl != null && !bitcoinUrl.isEmpty()) {
-                Bundle bundle = new Bundle();
-                bundle.putString("url", bitcoinUrl);
-                fragmentSend.setArguments(bundle);
-            }
-            app.getFragmentManager().beginTransaction()
-                    .setCustomAnimations(0, 0, 0, R.animator.plain_300)
-                    .add(android.R.id.content, fragmentSend, FragmentSend.class.getName())
-                    .addToBackStack(FragmentSend.class.getName()).commit();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        FragmentSend.show(app, bitcoinUrl);
     }
 
     public static void showTransactionPager(Activity app, List<ListItemTransactionData> items,
@@ -216,54 +193,12 @@ public class BRAnimator {
     }
 
     public static void showRequestFragment(Activity app, String address) {
-        if (app == null) {
-            Log.e(TAG, "showRequestFragment: app is null");
-            return;
-        }
-        if (Utils.isNullOrEmpty(address)) {
-            Log.e(TAG, "showRequestFragment: address is empty: " + address);
-            return;
-        }
-
-        FragmentRequestAmount fragmentRequestAmount =
-                (FragmentRequestAmount) app.getFragmentManager().findFragmentByTag(
-                        FragmentRequestAmount.class.getName());
-        if (fragmentRequestAmount != null && fragmentRequestAmount.isAdded()) {
-            return;
-        }
-
-        fragmentRequestAmount = new FragmentRequestAmount();
-        Bundle bundle = new Bundle();
-        bundle.putString("address", address);
-        fragmentRequestAmount.setArguments(bundle);
-        app.getFragmentManager().beginTransaction()
-                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
-                .add(android.R.id.content, fragmentRequestAmount,
-                        FragmentRequestAmount.class.getName())
-                .addToBackStack(FragmentRequestAmount.class.getName()).commit();
+        FragmentRequestAmount.show(app);
     }
 
     //isReceive tells the Animator that the Receive fragment is requested, not My Address
     public static void showReceiveFragment(Activity app, boolean isReceive) {
-        if (app == null) {
-            Log.e(TAG, "showReceiveFragment: app is null");
-            return;
-        }
-        FragmentReceive fragmentReceive =
-                (FragmentReceive) app.getFragmentManager().findFragmentByTag(
-                        FragmentReceive.class.getName());
-        if (fragmentReceive != null && fragmentReceive.isAdded()) {
-            return;
-        }
-        fragmentReceive = new FragmentReceive();
-        Bundle args = new Bundle();
-        args.putBoolean("receive", isReceive);
-        fragmentReceive.setArguments(args);
-
-        app.getFragmentManager().beginTransaction()
-                .setCustomAnimations(0, 0, 0, R.animator.plain_300)
-                .add(android.R.id.content, fragmentReceive, FragmentReceive.class.getName())
-                .addToBackStack(FragmentReceive.class.getName()).commit();
+        FragmentReceive.show(app, isReceive);
     }
 
     public static void showMenuFragment(Activity app) {

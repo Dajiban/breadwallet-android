@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Erfolgreich authentifiziert</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID Authenfizierungsanfrage</string>
+  <string name="BitID.title">Digi-ID Authenfizierungsanfrage</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Abbrechen</string>
   <!-- Ignore button label -->

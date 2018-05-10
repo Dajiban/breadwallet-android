@@ -156,7 +156,7 @@ public class FragmentFingerprint extends Fragment implements FingerprintUiHelper
                     }
                     if (goToBackup) {
                         handler.postDelayed(() -> {
-                            AuthManager.getInstance().authPromptWithFingerprint(getContext(),
+                            AuthManager.getInstance().authPrompt(getContext(),
                                     viewModel.getTitle(),
                                     viewModel.getMessage(), false, completion);
                         }, 350);
@@ -169,7 +169,8 @@ public class FragmentFingerprint extends Fragment implements FingerprintUiHelper
         if (getFragmentManager() == null) {
             return;
         }
-        getFragmentManager().popBackStack();
+        try { getFragmentManager().popBackStack(); }
+        catch(IllegalStateException e) { e.printStackTrace(); }
     }
 
     public void setCompletion(BRAuthCompletion completion) {

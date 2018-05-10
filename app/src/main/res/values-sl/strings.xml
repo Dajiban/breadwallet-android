@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Uspešno Overjeni</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Zahteva za DigiID Overjanje.</string>
+  <string name="BitID.title">Zahteva za Digi-ID Overjanje.</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Prekliči</string>
   <!-- Ignore button label -->

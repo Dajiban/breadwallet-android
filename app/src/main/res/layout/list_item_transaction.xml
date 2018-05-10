@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<layout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <data>
@@ -77,21 +78,24 @@
 
                 <io.digibyte.presenter.customviews.BRText
                     android:id="@+id/to_from"
-                    app:toFrom="@{data}"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:textColor="@color/almost_black"
-                    app:customTFont="CircularPro-Book.otf"/>
+                    app:customTFont="CircularPro-Book.otf"
+                    app:toFrom="@{data}"
+                    tools:text="From:" />
 
                 <io.digibyte.presenter.customviews.BRText
                     android:id="@+id/account"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
                     android:ellipsize="middle"
                     android:singleLine="true"
                     android:textColor="@color/almost_black"
                     app:account="@{data}"
-                    app:customTFont="CircularPro-Bold.otf"/>
+                    app:customTFont="CircularPro-Bold.otf"
+                    tools:text="sdfjlksdfsdjfdsf" />
 
             </LinearLayout>
 

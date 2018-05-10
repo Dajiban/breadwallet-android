@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Matagumpay ang Pagpapatunay</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Hiling Para sa Pagpapatunay ng DigiID</string>
+  <string name="BitID.title">Hiling Para sa Pagpapatunay ng Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Ikansela</string>
   <!-- Ignore button label -->

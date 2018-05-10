@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Sikeres hitelesítés</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID Hitelesítési Kérelem</string>
+  <string name="BitID.title">Digi-ID Hitelesítési Kérelem</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Mégse</string>
   <!-- Ignore button label -->

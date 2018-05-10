@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Úspěšně ověřeno</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Požadavek ověření DigiID</string>
+  <string name="BitID.title">Požadavek ověření Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Zrušit</string>
   <!-- Ignore button label -->

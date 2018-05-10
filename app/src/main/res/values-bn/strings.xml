@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">সফলভাবে প্রমাণিত</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID প্রমাণীকরণের অনুরোধ</string>
+  <string name="BitID.title">Digi-ID প্রমাণীকরণের অনুরোধ</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">বাতিল</string>
   <!-- Ignore button label -->

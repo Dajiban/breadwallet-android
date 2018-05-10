@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Autoryzowano Pomyślnie</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Wymagana Autoryzacja DigiID</string>
+  <string name="BitID.title">Wymagana Autoryzacja Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Anuluj</string>
   <!-- Ignore button label -->

@@ -1,32 +1,25 @@
 package io.digibyte.presenter.fragments;
 
-import static io.digibyte.tools.animation.BRAnimator.animateBackgroundDim;
-import static io.digibyte.tools.animation.BRAnimator.animateSignalSlide;
-
+import android.animation.LayoutTransition;
+import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.app.Fragment;
-import android.content.Context;
+import android.app.FragmentTransaction;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import io.digibyte.DigiByte;
 import io.digibyte.R;
-import io.digibyte.presenter.customviews.BRButton;
-import io.digibyte.presenter.customviews.BRKeyboard;
-import io.digibyte.presenter.customviews.BRLinearLayoutWithCaret;
+import io.digibyte.databinding.FragmentReceiveBinding;
+import io.digibyte.presenter.fragments.interfaces.FragmentReceiveCallbacks;
+import io.digibyte.presenter.fragments.interfaces.OnBackPressListener;
+import io.digibyte.presenter.fragments.models.ReceiveFragmentModel;
 import io.digibyte.tools.animation.BRAnimator;
-import io.digibyte.tools.animation.SlideDetector;
 import io.digibyte.tools.manager.BRClipboardManager;
 import io.digibyte.tools.manager.BRSharedPrefs;
 import io.digibyte.tools.qrcode.QRUtils;
@@ -59,141 +52,176 @@ import io.digibyte.wallet.BRWalletManager;
  * THE SOFTWARE.
  */
 
-public class FragmentReceive extends Fragment {
-    private static final String TAG = FragmentReceive.class.getName();
+public class FragmentReceive extends Fragment implements OnBackPressListener {
 
-    public TextView mTitle;
-    public TextView mAddress;
-    public ImageView mQrImage;
-    public LinearLayout backgroundLayout;
-    public LinearLayout signalLayout;
+    protected static final String IS_RECEIVE = "FragmentReceive:IsReceive";
     private String receiveAddress;
-    private View separator;
-    private BRButton shareButton;
-    private Button shareEmail;
-    private Button shareTextMessage;
-    private Button requestButton;
-    private BRLinearLayoutWithCaret shareButtonsLayout;
-    private BRLinearLayoutWithCaret copiedLayout;
     private boolean shareButtonsShown = false;
-    private boolean isReceive;
-    private ImageButton close;
-    private Handler copyCloseHandler = new Handler();
-    private BRKeyboard keyboard;
-    private View separator2;
+    private Handler copyCloseHandler = new Handler(Looper.getMainLooper());
+    protected FragmentReceiveBinding fragmentReceiveBinding;
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_receive, container, false);
-        mTitle = rootView.findViewById(R.id.title);
-        mAddress = rootView.findViewById(R.id.address_text);
-        mQrImage = rootView.findViewById(R.id.qr_image);
-        backgroundLayout = rootView.findViewById(R.id.background_layout);
-        signalLayout = rootView.findViewById(R.id.signal_layout);
-        shareButton = rootView.findViewById(R.id.share_button);
-        shareEmail = rootView.findViewById(R.id.share_email);
-        shareTextMessage = rootView.findViewById(R.id.share_text);
-        shareButtonsLayout = rootView.findViewById(R.id.share_buttons_layout);
-        copiedLayout = rootView.findViewById(R.id.copied_layout);
-        requestButton = rootView.findViewById(R.id.request_button);
-        keyboard = rootView.findViewById(R.id.keyboard);
-        keyboard.setBRButtonBackgroundResId(R.drawable.keyboard_white_button);
-        keyboard.setBRKeyboardColor(R.color.white);
-        separator = rootView.findViewById(R.id.separator);
-        close = rootView.findViewById(R.id.close_button);
-        separator2 = rootView.findViewById(R.id.separator2);
-        separator2.setVisibility(View.GONE);
-        setListeners();
-        BRWalletManager.getInstance().addBalanceChangedListener(balance -> updateQr());
-        signalLayout.removeView(shareButtonsLayout);
-        signalLayout.removeView(copiedLayout);
-        signalLayout.setLayoutTransition(BRAnimator.getDefaultTransition());
-        signalLayout.setOnTouchListener(new SlideDetector(getContext(), signalLayout));
-        return rootView;
-    }
+    protected ReceiveFragmentModel receiveFragmentModel = new ReceiveFragmentModel();
 
+    private FragmentReceiveCallbacks callbacks = new FragmentReceiveCallbacks() {
 
-    private void setListeners() {
-        shareEmail.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
+        @Override
+        public void shareEmailClick() {
+            if (onShareEmail()) {
+                //This allows for extending fragments to override thd function of this callback
+                return;
+            }
             String bitcoinUri = Utils.createBitcoinUrl(receiveAddress, 0, null, null, null);
             Uri qrImageUri = QRUtils.getQRImageUri(getContext(), bitcoinUri);
             QRUtils.share("mailto:", getActivity(), qrImageUri, null, null);
+        }
 
-        });
-        shareTextMessage.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
+        @Override
+        public void shareTextClick() {
+            if (onShareSMS()) {
+                //This allows for extending fragments to override thd function of this callback
+                return;
+            }
             try {
                 QRUtils.share("sms:", getActivity(), null, receiveAddress, "");
-            } catch(Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-        });
-        shareButton.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
+        }
+
+        @Override
+        public void shareButtonClick() {
+            FragmentReceive.this.onShareButtonClick();
             shareButtonsShown = !shareButtonsShown;
             showShareButtons(shareButtonsShown);
-        });
-        mAddress.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
+        }
+
+        @Override
+        public void addressClick() {
+            FragmentReceive.this.onAddressClick();
             copyText();
-        });
-        requestButton.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
-            Activity app = getActivity();
-            app.onBackPressed();
-            BRAnimator.showRequestFragment(app, receiveAddress);
+        }
 
-        });
+        @Override
+        public void requestButtonClick() {
+            fadeOutRemove(true);
+        }
 
-        backgroundLayout.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
-            getActivity().onBackPressed();
-        });
-        mQrImage.setOnClickListener(v -> {
-            if (!BRAnimator.isClickAllowed()) return;
+        @Override
+        public void backgroundClick() {
+            fadeOutRemove(false);
+
+        }
+
+        @Override
+        public void qrImageClick() {
+            FragmentReceive.this.onQRClick();
             copyText();
-        });
+        }
 
-        close.setOnClickListener(v -> {
-            Activity app = getActivity();
-            if (app != null) {
-                app.getFragmentManager().popBackStack();
-            }
-        });
+        @Override
+        public void closeClick() {
+            fadeOutRemove(false);
+        }
+
+        @Override
+        public void onAmountEditClick() {
+            FragmentReceive.this.onAmountEditClick();
+            //Not used in this implementation
+        }
+
+        @Override
+        public void onClick(String key) {
+            onKeyboardClick(key);
+            //Not used in this implementation
+        }
+
+        @Override
+        public void onIsoButtonClick() {
+            FragmentReceive.this.onIsoButtonClick();
+            //Not used in this implementation
+        }
+    };
+
+    protected void onAmountEditClick() {
     }
 
-    private void showShareButtons(boolean b) {
-        if (!b) {
-            signalLayout.removeView(shareButtonsLayout);
-            shareButton.setType(2);
+    protected void onKeyboardClick(String key) {
+    }
+
+    protected void onIsoButtonClick() {
+    }
+
+    protected boolean onShareEmail() {
+        return false;
+    }
+
+    protected boolean onShareSMS() {
+        return false;
+    }
+
+    protected void onShareButtonClick() {
+    }
+
+    protected void onQRClick() {
+    }
+
+    protected void onAddressClick() {
+    }
+
+    public static void show(Activity activity, boolean isReceive) {
+        FragmentReceive fragmentReceive = new FragmentReceive();
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(IS_RECEIVE, isReceive);
+        fragmentReceive.setArguments(bundle);
+        FragmentTransaction transaction = activity.getFragmentManager().beginTransaction();
+        transaction.setCustomAnimations(R.animator.from_bottom, R.animator.to_bottom,
+                R.animator.from_bottom, R.animator.to_bottom);
+        transaction.add(android.R.id.content, fragmentReceive,
+                FragmentReceive.class.getName());
+        transaction.addToBackStack(FragmentReceive.class.getName());
+        transaction.commitAllowingStateLoss();
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        fragmentReceiveBinding = FragmentReceiveBinding.inflate(inflater);
+        fragmentReceiveBinding.setCallback(callbacks);
+        fragmentReceiveBinding.setData(receiveFragmentModel);
+        fragmentReceiveBinding.addressText.setSelected(true);
+        fragmentReceiveBinding.mainContainer.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        fragmentReceiveBinding.amountLayout.getLayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        BRWalletManager.getInstance().addBalanceChangedListener(balance -> updateQr());
+        return fragmentReceiveBinding.getRoot();
+    }
+
+    private boolean getIsReceive() {
+        if (getArguments() == null) {
+            return false;
+        }
+        return getArguments().getBoolean(IS_RECEIVE, false);
+    }
+
+    protected void showShareButtons(boolean show) {
+        if (!show) {
+            receiveFragmentModel.setShareVisibility(false);
+            receiveFragmentModel.setShareButtonType(2);
         } else {
-            signalLayout.addView(shareButtonsLayout,
-                    isReceive ? signalLayout.getChildCount() - 2 : signalLayout.getChildCount());
-            shareButton.setType(3);
+            receiveFragmentModel.setShareVisibility(true);
+            receiveFragmentModel.setShareButtonType(3);
             showCopiedLayout(false);
         }
     }
 
-    private void showCopiedLayout(boolean b) {
-        if (!b) {
-            signalLayout.removeView(copiedLayout);
+    private void showCopiedLayout(boolean show) {
+        if (!show) {
+            receiveFragmentModel.setCopiedButtonLayoutVisibility(false);
             copyCloseHandler.removeCallbacksAndMessages(null);
         } else {
-            if (signalLayout.indexOfChild(copiedLayout) == -1) {
-                signalLayout.addView(copiedLayout, signalLayout.indexOfChild(shareButton));
+            if (!receiveFragmentModel.isCopiedButtonLayoutVisibility()) {
+                receiveFragmentModel.setCopiedButtonLayoutVisibility(true);
                 showShareButtons(false);
                 shareButtonsShown = false;
-                copyCloseHandler.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        signalLayout.removeView(copiedLayout);
-                    }
-                }, 2000);
-            } else {
-                copyCloseHandler.removeCallbacksAndMessages(null);
-                signalLayout.removeView(copiedLayout);
+                copyCloseHandler.postDelayed(() -> showCopiedLayout(false), 2000);
             }
         }
     }
@@ -201,74 +229,72 @@ public class FragmentReceive extends Fragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        final ViewTreeObserver observer = signalLayout.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                observer.removeGlobalOnLayoutListener(this);
-                animateBackgroundDim(backgroundLayout, false);
-                animateSignalSlide(signalLayout, false, null);
-            }
-        });
-
-        Bundle extras = getArguments();
-        isReceive = extras.getBoolean("receive");
-        if (!isReceive) {
-            signalLayout.removeView(separator);
-            signalLayout.removeView(requestButton);
-            mTitle.setText(getString(R.string.UnlockScreen_myAddress));
+        if (allowRequestAmountButtonShow()) {
+            receiveFragmentModel.setSeparatorVisibility(getIsReceive());
+            receiveFragmentModel.setRequestButtonVisibility(getIsReceive());
         }
-
+        if (!getIsReceive()) {
+            receiveFragmentModel.setTitle(getString(R.string.UnlockScreen_myAddress));
+        }
         BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> updateQr());
+        ObjectAnimator colorFade = BRAnimator.animateBackgroundDim(fragmentReceiveBinding.backgroundLayout, false, null);
+        colorFade.setStartDelay(350);
+        colorFade.setDuration(500);
+        colorFade.start();
+    }
 
+    protected boolean allowRequestAmountButtonShow() {
+        return true;
     }
 
     private void updateQr() {
-        final Context ctx = getContext() == null ? DigiByte.getContext() : (Activity) getContext();
         BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
-            boolean success = BRWalletManager.refreshAddress(ctx);
-            if (!success) {
-                if (ctx instanceof Activity) {
-                    BRExecutor.getInstance().forMainThreadTasks().execute(
-                            () -> ((Activity) ctx).onBackPressed());
-                }
+            if (getContext() == null) {
                 return;
             }
-            BRExecutor.getInstance().forMainThreadTasks().execute(() -> {
-                receiveAddress = BRSharedPrefs.getReceiveAddress(ctx);
-                mAddress.setText(receiveAddress);
-                boolean generated = QRUtils.generateQR(ctx, "digibyte:" + receiveAddress, mQrImage);
-                if (!generated) {
-                    throw new RuntimeException("failed to generate qr image for address");
-                }
+            BRWalletManager.refreshAddress(getContext());
+            copyCloseHandler.post(() -> {
+                receiveAddress = BRSharedPrefs.getReceiveAddress(getContext());
+                receiveFragmentModel.setAddress(receiveAddress);
+                QRUtils.generateQR(getContext(), "digibyte:" + receiveAddress, fragmentReceiveBinding.qrImage);
             });
         });
     }
 
     private void copyText() {
-        BRClipboardManager.putClipboard(getContext(), mAddress.getText().toString());
+        BRClipboardManager.putClipboard(getContext(), receiveAddress);
         showCopiedLayout(true);
     }
 
-    @Override
-    public void onStop() {
-        super.onStop();
-        animateBackgroundDim(backgroundLayout, true);
-        animateSignalSlide(signalLayout, true, () -> {
-            if (getActivity() != null) {
-                getActivity().getFragmentManager().popBackStack();
-            }
-        });
+    private void fadeOutRemove(boolean showRequestAmountPopup) {
+        ObjectAnimator colorFade = BRAnimator.animateBackgroundDim(fragmentReceiveBinding.backgroundLayout, true,
+                () -> {
+                    remove();
+                    if (showRequestAmountPopup) {
+                        copyCloseHandler.postDelayed(() -> {
+                            if (getActivity() == null) {
+                                return;
+                            }
+                            BRAnimator.showRequestFragment(getActivity(), receiveAddress);
+                        }, 350);
+                    }
+                });
+        colorFade.start();
+    }
+
+    private void remove() {
+        if (getFragmentManager() == null) {
+            return;
+        }
+        try {
+            getFragmentManager().popBackStack();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
+    public void onBackPressed() {
+        fadeOutRemove(false);
     }
 }

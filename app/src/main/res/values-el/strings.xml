@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Επιτυχία πιστοποίησης</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Αίτηση πιστοποίησης DigiID</string>
+  <string name="BitID.title">Αίτηση πιστοποίησης Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Ακύρωση</string>
   <!-- Ignore button label -->

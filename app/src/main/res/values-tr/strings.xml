@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Başarıyla erişim sağlandı</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID Erişim İzni İsteği</string>
+  <string name="BitID.title">Digi-ID Erişim İzni İsteği</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">İptal</string>
   <!-- Ignore button label -->

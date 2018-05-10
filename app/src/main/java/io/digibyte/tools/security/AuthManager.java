@@ -151,11 +151,11 @@ public class AuthManager {
     }
 
     public void authPrompt(final Context context, String title, String message, BRAuthCompletion completion) {
-        authPromptWithFingerprint(context, title, message, isFingerPrintAvailableAndSetup(context), completion);
+        authPrompt(context, title, message, isFingerPrintAvailableAndSetup(context), completion);
     }
 
-    public void authPromptWithFingerprint(final Context context, String title, String message, boolean fingerprint,
-            BRAuthCompletion completion) {
+    public void authPrompt(final Context context, String title, String message, boolean fingerprint,
+                           BRAuthCompletion completion) {
         if (context instanceof Activity) {
             final Activity app = (Activity) context;
             final KeyguardManager keyguardManager =

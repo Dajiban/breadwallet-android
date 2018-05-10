@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Autentificare cu succes</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">DigiID autentificare solicitată</string>
+  <string name="BitID.title">Digi-ID autentificare solicitată</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Anulare</string>
   <!-- Ignore button label -->

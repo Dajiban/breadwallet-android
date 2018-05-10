@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Berjaya Disahkan</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Permintaan Pengesahan DigiID</string>
+  <string name="BitID.title">Permintaan Pengesahan Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Batal</string>
   <!-- Ignore button label -->

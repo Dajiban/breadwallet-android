@@ -95,7 +95,7 @@
   <!-- BitID success alert title -->
   <string name="BitID.success">Xác thực thành công</string>
   <!-- BitID Authentication Request alert view title -->
-  <string name="BitID.title">Yêu cầu xác thực DigiID</string>
+  <string name="BitID.title">Yêu cầu xác thực Digi-ID</string>
   <!-- Cancel button label -->
   <string name="Button.cancel">Hủy</string>
   <!-- Ignore button label -->

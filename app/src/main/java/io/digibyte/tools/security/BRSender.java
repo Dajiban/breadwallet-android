@@ -291,7 +291,7 @@ public class BRSender {
                 AuthManager.isFingerPrintAvailableAndSetup(ctx) && limit == 0) || (AuthManager.isFingerPrintAvailableAndSetup(ctx) && requestAmount < limit);
 
         //successfully created the transaction, authenticate user
-        AuthManager.getInstance().authPromptWithFingerprint(ctx, "", message, fingerprintEnabled, new BRAuthCompletion() {
+        AuthManager.getInstance().authPrompt(ctx, "", message, fingerprintEnabled, new BRAuthCompletion() {
             @Override
             public void onComplete() {
                 BRExecutor.getInstance().forLightWeightBackgroundTasks().execute(() -> {
